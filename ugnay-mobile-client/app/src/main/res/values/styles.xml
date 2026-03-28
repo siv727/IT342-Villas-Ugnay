@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Widget.Ugnay.SegmentedButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:minHeight">44dp</item>
+        <item name="android:textColor">@color/segmented_button_text</item>
+        <item name="backgroundTint">@color/segmented_button_background</item>
+        <item name="strokeColor">@android:color/transparent</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="rippleColor">@color/auth_surface_variant</item>
+    </style>
+
+</resources>
