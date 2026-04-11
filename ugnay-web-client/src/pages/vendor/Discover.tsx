@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Bookmark, BookmarkCheck } from 'lucide-react';
 import useAppStore from '../../stores/appStore';
@@ -8,13 +8,24 @@ import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import { SearchBar, Select } from '../../components/ui/Input';
 import EmptyState from '../../components/ui/EmptyState';
+import Pagination from '../../components/ui/Pagination';
+import manufacturerApi from '../../api/manufacturerApi';
 
 export default function Discover() {
-  const { manufacturers, toggleSaveManufacturer } = useAppStore();
+  const { manufacturers: storeManufacturers, toggleSaveManufacturer } = useAppStore();
   const [search, setSearch] = useState('');
   const [province, setProvince] = useState('');
   const [city, setCity] = useState('');
   const [category, setCategory] = useState('All');
+  const [manufacturers, setManufacturers] = useState(storeManufacturers);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit] = useState(9);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // debounce search
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
 
   const cities: string[] = province ? psgcData[province] || [] : [];
 
@@ -30,8 +41,52 @@ export default function Discover() {
     });
   }, [manufacturers, search, province, city, category]);
 
+  // update debounced search when user types
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetch = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const params: Record<string, unknown> = { page, limit };
+        if (province) params.province = province;
+        if (city) params.city = city;
+        if (category && category !== 'All') params.category = category;
+        if (debouncedSearch) params.q = debouncedSearch;
+        const res = await manufacturerApi.getManufacturers(params);
+        if (mounted && res && res.data) {
+          // API may return paginated shape { data, total, page, limit }
+          if (res.data.data && Array.isArray(res.data.data)) {
+            setManufacturers(res.data.data);
+            setTotalPages(Math.ceil((res.data.total || res.data.totalItems || res.data.count || res.data.data.length) / limit));
+          } else {
+            setManufacturers(res.data);
+            setTotalPages(Math.ceil((res.data.length || 0) / limit));
+          }
+        }
+      } catch {
+        // fallback to local store
+        setError('Could not load from API, using local data');
+        setManufacturers(storeManufacturers);
+        setTotalPages(Math.ceil(storeManufacturers.length / limit));
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    fetch();
+    return () => { mounted = false; };
+  }, [province, city, category, debouncedSearch, storeManufacturers, page, limit]);
+
   return (
     <div>
+      {loading && <div className="mb-4 text-sm text-neutral-500">Loading manufacturers…</div>}
+      {error && <div className="mb-4 text-sm text-danger">{error}</div>}
       <h1 className="text-[32px] font-bold text-neutral-900 mb-6">Discover Manufacturers</h1>
 
       {/* Search & filters */}
@@ -103,6 +158,11 @@ export default function Discover() {
               </div>
             </Card>
           ))}
+        </div>
+      )}
+      {totalPages > 1 && (
+        <div className="mt-6">
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </div>
       )}
     </div>
