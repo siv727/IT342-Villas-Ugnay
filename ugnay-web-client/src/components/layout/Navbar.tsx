@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Menu, LogOut, MapPin, Building2 } from 'lucide-react';
 import useAuthStore from '../../stores/authStore';
+import { getUserProfile, type UserProfile } from '../../api/profileApi';
 import { ConfirmModal } from '../ui/Modal';
 
 interface NavbarProps {
@@ -13,6 +14,7 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [signOutOpen, setSignOutOpen] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -25,6 +27,18 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
+  // Fetch user profile when dropdown opens
+  useEffect(() => {
+    if (!user?.userId) return;
+    const fetchProfile = async () => {
+      try {
+        const p = await getUserProfile(user.userId);
+        setProfile(p);
+      } catch { /* ignore */ }
+    };
+    fetchProfile();
+  }, [user?.userId]);
+
   const handleLogout = async () => {
     setSignOutOpen(false);
     setDropdownOpen(false);
@@ -32,9 +46,9 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
     navigate('/login');
   };
 
-  const initials = user?.role === 'manufacturer' ? 'M' : 'V';
+  const initials = profile?.businessName?.charAt(0) || (user?.role === 'manufacturer' ? 'M' : 'V');
   const roleName = user?.role === 'manufacturer' ? 'Manufacturer' : 'Vendor';
-  const businessName = user?.role === 'manufacturer' ? 'My Manufacturer' : 'My Business';
+  const businessName = profile?.businessName || (user?.role === 'manufacturer' ? 'My Manufacturer' : 'My Business');
 
   return (
     <>
@@ -52,7 +66,6 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
         <div className="flex items-center gap-4">
           <button className="relative text-white/80 hover:text-white transition-colors">
             <Bell className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-error rounded-full border-2 border-primary-dark" />
           </button>
 
           <div className="relative" ref={dropdownRef}>
@@ -81,7 +94,7 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
                   </div>
                   <div className="flex items-center gap-1 text-xs text-neutral-400">
                     <MapPin className="h-3 w-3" />
-                    <span>User #{user?.userId}</span>
+                    <span>{profile?.businessAddress || `User #${user?.userId}`}</span>
                   </div>
                 </div>
 
