@@ -1,37 +1,36 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { MapPin, ExternalLink, Users } from 'lucide-react';
-import useAppStore from '../../stores/appStore';
+import { MapPin, Users } from 'lucide-react';
 import connectionApi from '../../api/connectionApi';
 import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import EmptyState from '../../components/ui/EmptyState';
-import type { Manufacturer } from '../../data/mockData';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
+
+interface ConnectionItem {
+  id: number;
+  manufacturerId?: number;
+  vendorId?: number;
+  businessName: string;
+  category: string;
+  businessAddress?: string;
+}
 
 export default function MfConnections() {
-  const { manufacturers } = useAppStore();
-  const [connections, setConnections] = useState<Manufacturer[]>([]);
+  const [connections, setConnections] = useState<ConnectionItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
     const fetch = async () => {
+      setLoading(true);
       try {
         const res = await connectionApi.getConnections();
-        if (mounted && res?.data) {
-          const body = res.data;
-          if (body.success && body.data?.items) {
-            setConnections(body.data.items);
-            return;
-          }
-        }
-      } catch { /* fallback */ }
-      // Manufacturer connections — show vendors that have saved them (simplified: show saved manufacturers from store)
-      if (mounted) setConnections(manufacturers.filter((m) => m.saved));
+        const body = res?.data;
+        if (body?.success && body.data?.items) setConnections(body.data.items);
+      } catch { /* empty state */ }
+      setLoading(false);
     };
     fetch();
-    return () => { mounted = false; };
-  }, [manufacturers]);
+  }, []);
 
   return (
     <div>
@@ -39,29 +38,20 @@ export default function MfConnections() {
         <Users className="h-6 w-6 text-accent" /> My Connections
       </h1>
 
-      {connections.length === 0 ? (
-        <EmptyState
-          title="No connections yet"
-          description="Vendors who save your profile will appear here."
-        />
+      {loading ? (
+        <LoadingSpinner label="Loading connections…" />
+      ) : connections.length === 0 ? (
+        <EmptyState title="No connections yet" description="Vendors who save your profile will appear here." />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {connections.map((m) => (
-            <Card key={m.id} hover accentBorder className="flex flex-col">
+          {connections.map((c) => (
+            <Card key={c.id} hover accentBorder className="flex flex-col">
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2">{m.businessName}</h3>
-                <Badge status="connected" className="mb-2">{m.category}</Badge>
-                <div className="flex items-center gap-1 text-xs text-neutral-400 mb-3">
-                  <MapPin className="h-3 w-3" /> {m.city}, {m.province}
-                </div>
-                <p className="text-sm text-neutral-700 line-clamp-2">{m.description}</p>
-              </div>
-              <div className="mt-4 pt-4 border-t border-neutral-100">
-                <Link to={`/vendor/manufacturer/${m.id}`}>
-                  <Button variant="secondary" fullWidth className="text-xs">
-                    <ExternalLink className="h-3.5 w-3.5" /> View Profile
-                  </Button>
-                </Link>
+                <h3 className="text-lg font-semibold text-neutral-900 mb-2">{c.businessName}</h3>
+                <Badge status="connected" className="mb-2">{c.category}</Badge>
+                {c.businessAddress && (
+                  <div className="flex items-center gap-1 text-xs text-neutral-400 mb-3"><MapPin className="h-3 w-3" /> {c.businessAddress}</div>
+                )}
               </div>
             </Card>
           ))}
