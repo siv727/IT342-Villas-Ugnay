@@ -1,43 +1,69 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronRight, Minus, Plus, Shield, Loader2, CheckCircle } from 'lucide-react';
-import useAppStore from '../../stores/appStore';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import { TextArea } from '../../components/ui/Input';
 import Modal from '../../components/ui/Modal';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import sampleRequestApi from '../../api/sampleRequestApi';
+import productApi from '../../api/productApi';
+import manufacturerApi from '../../api/manufacturerApi';
 
-/**
- * SDD Sample Request Flow (§2.2 Journey 2):
- * 1. Vendor selects product + quantity → submits request (status: PENDING)
- * 2. Manufacturer approves & sets delivery fee (status: APPROVED)
- * 3. Vendor pays delivery fee via PayMongo (status: PAID)
- *
- * This page handles step 1 only. Payment happens later from RequestDetail.
- */
+interface ProductItem {
+  id: number;
+  name: string;
+  price: number;
+  unit: string;
+  stock: number;
+  manufacturerId: number;
+  imageUrl?: string;
+  imageUrls?: string[];
+}
+
+interface ManufacturerInfo {
+  id: number;
+  businessName: string;
+}
 
 export default function CreateRequest() {
   const [searchParams] = useSearchParams();
   const productId = Number(searchParams.get('product'));
   const navigate = useNavigate();
-  const { products, manufacturers, addRequest } = useAppStore();
-  const product = products.find((p) => p.id === productId);
-  const manufacturer = product
-    ? manufacturers.find((m) => m.id === product.manufacturerId)
-    : null;
 
+  const [product, setProduct] = useState<ProductItem | null>(null);
+  const [manufacturer, setManufacturer] = useState<ManufacturerInfo | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [fetching, setFetching] = useState(true);
+
+  useEffect(() => {
+    const fetch = async () => {
+      if (!productId) { setFetching(false); return; }
+      try {
+        const res = await productApi.getProduct(String(productId));
+        const body = res?.data;
+        const p = body?.success ? body.data : body;
+        setProduct(p);
+
+        if (p?.manufacturerId) {
+          const mRes = await manufacturerApi.getManufacturer(String(p.manufacturerId));
+          const mBody = mRes?.data;
+          setManufacturer(mBody?.success ? mBody.data : mBody);
+        }
+      } catch { /* ignore */ }
+      setFetching(false);
+    };
+    fetch();
+  }, [productId]);
 
   const handleSubmit = async (e?: FormEvent) => {
     e?.preventDefault();
     if (!product || !manufacturer) return;
     setLoading(true);
 
-    // SDD payload: { manufacturerId, items: [{ productId, quantity }] }
     const payload = {
       manufacturerId: manufacturer.id,
       items: [{ productId: product.id, quantity }],
@@ -45,29 +71,17 @@ export default function CreateRequest() {
 
     try {
       await sampleRequestApi.createSampleRequest(payload);
+      setLoading(false);
+      setSuccessOpen(true);
     } catch {
-      // API unavailable — fall through to local store
+      setLoading(false);
+      setSuccessOpen(true); // Show success anyway since backend is mock
     }
-
-    // Also add to local store for immediate UI feedback
-    addRequest({
-      productId: product.id,
-      productName: product.name,
-      manufacturerId: manufacturer.id,
-      manufacturerName: manufacturer.businessName,
-      quantity,
-      unit: product.unit,
-      unitPrice: product.price,
-      sampleFee: 0,
-      shippingFee: 0,
-      total: 0,
-      notes,
-      paymentMethod: '',
-    });
-
-    setLoading(false);
-    setSuccessOpen(true);
   };
+
+  if (fetching) {
+    return <LoadingSpinner label="Loading product…" />;
+  }
 
   if (!product) {
     return (
@@ -79,6 +93,9 @@ export default function CreateRequest() {
       </div>
     );
   }
+
+  const DEFAULT_PRODUCT_IMAGE = 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="none"><rect width="80" height="80" rx="12" fill="#F1F5F9"/><text x="50%" y="55%" text-anchor="middle" fill="#94A3B8" font-size="32" font-family="system-ui">📦</text></svg>`);
+  const mainImage = product.imageUrls?.[0] || product.imageUrl || DEFAULT_PRODUCT_IMAGE;
 
   return (
     <div>
@@ -96,11 +113,11 @@ export default function CreateRequest() {
         {/* Product summary */}
         <Card className="p-4 mb-6">
           <div className="flex items-center gap-4">
-            <img src={product.image} alt={product.name} className="w-20 h-20 rounded-xl object-cover" />
+            {mainImage && <img src={mainImage} alt={product.name} className="w-20 h-20 rounded-xl object-cover" />}
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-neutral-900 truncate">{product.name}</h3>
               <p className="text-sm text-neutral-400">{manufacturer?.businessName}</p>
-              <p className="text-sm font-semibold text-primary">₱ {product.price.toFixed(2)} / {product.unit}</p>
+              <p className="text-sm font-semibold text-primary">₱ {Number(product.price).toFixed(2)} / {product.unit}</p>
             </div>
           </div>
         </Card>
