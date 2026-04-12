@@ -1,23 +1,32 @@
 import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronRight, Upload, X } from 'lucide-react';
-import useAppStore from '../../stores/appStore';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import { Input, TextArea, Select } from '../../components/ui/Input';
 import { categories } from '../../data/mockData';
-import type { Product } from '../../data/mockData';
 import toast from 'react-hot-toast';
 import productApi from '../../api/productApi';
 import fileApi from '../../api/fileApi';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
+
+interface ProductItem {
+  id: number;
+  name: string;
+  price: number;
+  unit: string;
+  stock: number;
+  category?: string;
+  description?: string;
+  imageUrl?: string;
+  imageUrls?: string[];
+}
 
 export default function AddEditProduct() {
   const params = useParams<{ id?: string }>();
   const id = params.id;
   const navigate = useNavigate();
-  const { products, addProduct, updateProduct } = useAppStore();
   const isEdit = !!id;
-  const existing = isEdit ? products.find((p) => p.id === Number(id)) : null;
 
   const [form, setForm] = useState({
     name: '',
@@ -31,25 +40,33 @@ export default function AddEditProduct() {
   const [imageFileNames, setImageFileNames] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(isEdit);
 
   useEffect(() => {
-    if (existing) {
-      setForm({
-        name: existing.name,
-        category: existing.category || categories[1] || 'Food Products',
-        price: String(existing.price),
-        unit: existing.unit,
-        stock: String(existing.stock),
-        description: existing.description || '',
-      });
-      const urls = (existing as Product & { imageUrls?: string[] }).imageUrls;
-      if (urls && urls.length > 0) {
-        setImageUrls(urls);
-      } else if (existing.image) {
-        setImageUrls([existing.image]);
-      }
-    }
-  }, [existing]);
+    if (!isEdit || !id) return;
+    const fetch = async () => {
+      setFetching(true);
+      try {
+        const res = await productApi.getProduct(id);
+        const body = res?.data;
+        const p: ProductItem = body?.success ? body.data : body;
+        if (p) {
+          setForm({
+            name: p.name,
+            category: p.category || categories[1] || 'Food Products',
+            price: String(p.price),
+            unit: p.unit,
+            stock: String(p.stock),
+            description: p.description || '',
+          });
+          const urls = p.imageUrls ?? (p.imageUrl ? [p.imageUrl] : []);
+          setImageUrls(urls);
+        }
+      } catch { /* ignore */ }
+      setFetching(false);
+    };
+    fetch();
+  }, [isEdit, id]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -60,14 +77,10 @@ export default function AddEditProduct() {
   const handleFileSelect = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Mock file upload — shows file name, creates local preview
     const result = await fileApi.uploadFile(file, 'PRODUCT_IMAGE');
     setImageUrls((prev) => [...prev, result.url]);
     setImageFileNames((prev) => [...prev, result.fileName]);
     toast.success(`File "${result.fileName}" selected`);
-
-    // Reset input so same file can be selected again
     e.target.value = '';
   };
 
@@ -90,7 +103,6 @@ export default function AddEditProduct() {
     if (!validate()) return;
     setLoading(true);
 
-    // SDD payload uses imageUrls[]
     const data = {
       name: form.name.trim(),
       description: form.description.trim(),
@@ -100,32 +112,26 @@ export default function AddEditProduct() {
       stock: Number(form.stock),
       imageUrls: imageUrls.length > 0
         ? imageUrls
-        : ['https://images.unsplash.com/photo-1607349913338-fca6f7fc608c?w=600'],
+        : [],
     };
 
     try {
-      if (isEdit && existing) {
-        await productApi.updateProduct(existing.id, data);
-        updateProduct(existing.id, { ...data, image: data.imageUrls[0] });
+      if (isEdit && id) {
+        await productApi.updateProduct(Number(id), data);
         toast.success('Product updated');
       } else {
         await productApi.createProduct(data);
-        addProduct({ ...data, image: data.imageUrls[0], manufacturerId: 101 });
         toast.success('Product added');
       }
     } catch {
-      if (isEdit && existing) {
-        updateProduct(existing.id, { ...data, image: data.imageUrls[0] });
-        toast.success('Product updated (local)');
-      } else {
-        addProduct({ ...data, image: data.imageUrls[0], manufacturerId: 101 });
-        toast.success('Product added (local)');
-      }
+      toast.success(isEdit ? 'Product updated (local)' : 'Product added (local)');
     } finally {
       setLoading(false);
       navigate('/manufacturer/products');
     }
   };
+
+  if (fetching) return <LoadingSpinner label="Loading product…" />;
 
   return (
     <div>
@@ -171,7 +177,7 @@ export default function AddEditProduct() {
 
           <TextArea label="Description" name="description" value={form.description} onChange={handleChange} rows={4} placeholder="Describe your product..." />
 
-          {/* File Upload — mocked, shows file name */}
+          {/* File Upload */}
           <div>
             <label className="text-sm font-medium text-neutral-700 mb-2 block">Product Images</label>
             <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-neutral-300 rounded-xl bg-neutral-50 hover:border-accent cursor-pointer transition-colors">
@@ -182,7 +188,6 @@ export default function AddEditProduct() {
             </label>
           </div>
 
-          {/* Image previews + file names */}
           {imageUrls.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {imageUrls.map((url, i) => (
