@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Mail, Building2, FileText, Shield, LogOut, Lock, Camera, Package } from 'lucide-react';
+import { MapPin, Mail, Building2, FileText, Shield, LogOut, Lock, Camera } from 'lucide-react';
 import useAuthStore from '../../stores/authStore';
 import useAppStore from '../../stores/appStore';
 import Card from '../../components/ui/Card';
@@ -11,9 +11,9 @@ import { ConfirmModal } from '../../components/ui/Modal';
 import { PasswordInput } from '../../components/ui/Input';
 import toast from 'react-hot-toast';
 
-export default function ManufacturerProfile() {
+export default function VendorProfile() {
   const { user, logout } = useAuthStore();
-  const { products, manufacturerRequests: requests } = useAppStore();
+  const { vendorRequests, manufacturers } = useAppStore();
   const navigate = useNavigate();
 
   const [signOutOpen, setSignOutOpen] = useState(false);
@@ -37,10 +37,9 @@ export default function ManufacturerProfile() {
     setPw({ current: '', newPw: '', confirm: '' });
   };
 
-  const totalProducts = products.filter((p) => p.manufacturerId === 101).length;
-  const activeProducts = products.filter((p) => p.manufacturerId === 101 && p.active).length;
-  const totalRequests = requests.length;
-  const pendingRequests = requests.filter((r) => r.status === 'Pending').length;
+  const savedCount = manufacturers.filter((m) => m.saved).length;
+  const totalRequests = vendorRequests.length;
+  const pendingRequests = vendorRequests.filter((r) => r.status === 'Pending').length;
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -51,8 +50,8 @@ export default function ManufacturerProfile() {
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
           {/* Profile picture */}
           <div className="relative group shrink-0">
-            <div className="w-28 h-28 rounded-full bg-primary flex items-center justify-center text-white text-3xl font-bold shadow-md">
-              M
+            <div className="w-28 h-28 rounded-full bg-accent flex items-center justify-center text-white text-3xl font-bold shadow-md">
+              V
             </div>
             <button
               type="button"
@@ -64,9 +63,9 @@ export default function ManufacturerProfile() {
 
           {/* Profile details */}
           <div className="flex-1 text-center sm:text-left">
-            <h2 className="text-xl font-bold text-neutral-900 mb-1">My Manufacturer</h2>
-            <Badge status="in-transit" className="mb-3">
-              <Package className="h-3 w-3" /> Manufacturer
+            <h2 className="text-xl font-bold text-neutral-900 mb-1">My Business</h2>
+            <Badge status="connected" className="mb-3">
+              <Building2 className="h-3 w-3" /> Vendor
             </Badge>
 
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 mt-4 text-sm">
@@ -74,7 +73,7 @@ export default function ManufacturerProfile() {
                 <Mail className="h-4 w-4 text-neutral-400 shrink-0" />
                 <div>
                   <dt className="text-xs text-neutral-400">Email</dt>
-                  <dd className="text-neutral-900 font-medium">manufacturer@example.com</dd>
+                  <dd className="text-neutral-900 font-medium">vendor@example.com</dd>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -94,8 +93,8 @@ export default function ManufacturerProfile() {
               <div className="flex items-center gap-2">
                 <Building2 className="h-4 w-4 text-neutral-400 shrink-0" />
                 <div>
-                  <dt className="text-xs text-neutral-400">Category</dt>
-                  <dd className="text-neutral-900 font-medium">Food Products</dd>
+                  <dt className="text-xs text-neutral-400">Role</dt>
+                  <dd className="text-neutral-900 font-medium capitalize">{user?.role || 'vendor'}</dd>
                 </div>
               </div>
             </dl>
@@ -104,15 +103,7 @@ export default function ManufacturerProfile() {
       </Card>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <Card className="text-center">
-          <p className="text-2xl font-bold text-primary">{totalProducts}</p>
-          <p className="text-xs text-neutral-400 mt-1">Total Products</p>
-        </Card>
-        <Card className="text-center">
-          <p className="text-2xl font-bold text-accent">{activeProducts}</p>
-          <p className="text-xs text-neutral-400 mt-1">Active</p>
-        </Card>
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <Card className="text-center">
           <p className="text-2xl font-bold text-primary">{totalRequests}</p>
           <p className="text-xs text-neutral-400 mt-1">Total Requests</p>
@@ -120,6 +111,10 @@ export default function ManufacturerProfile() {
         <Card className="text-center">
           <p className="text-2xl font-bold text-highlight">{pendingRequests}</p>
           <p className="text-xs text-neutral-400 mt-1">Pending</p>
+        </Card>
+        <Card className="text-center">
+          <p className="text-2xl font-bold text-accent">{savedCount}</p>
+          <p className="text-xs text-neutral-400 mt-1">Saved Manufacturers</p>
         </Card>
       </div>
 
