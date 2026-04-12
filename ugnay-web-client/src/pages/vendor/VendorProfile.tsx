@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Mail, Building2, FileText, Shield, LogOut, Lock, Camera } from 'lucide-react';
 import useAuthStore from '../../stores/authStore';
-import useAppStore from '../../stores/appStore';
+import { getUserProfile, type UserProfile } from '../../api/profileApi';
+import sampleRequestApi from '../../api/sampleRequestApi';
+import connectionApi from '../../api/connectionApi';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
@@ -13,13 +15,44 @@ import toast from 'react-hot-toast';
 
 export default function VendorProfile() {
   const { user, logout } = useAuthStore();
-  const { vendorRequests, manufacturers } = useAppStore();
   const navigate = useNavigate();
 
   const [signOutOpen, setSignOutOpen] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
   const [pw, setPw] = useState({ current: '', newPw: '', confirm: '' });
   const [pwError, setPwError] = useState('');
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [savedCount, setSavedCount] = useState(0);
+  const [totalRequests, setTotalRequests] = useState(0);
+  const [pendingRequests, setPendingRequests] = useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user?.userId) return;
+      try {
+        const p = await getUserProfile(user.userId);
+        setProfile(p);
+      } catch { /* ignore */ }
+
+      try {
+        const res = await sampleRequestApi.getSampleRequests();
+        const body = res?.data;
+        if (body?.success && body.data?.items) {
+          setTotalRequests(body.data.items.length);
+          setPendingRequests(body.data.items.filter((r: { status: string }) => r.status === 'PENDING').length);
+        }
+      } catch { /* ignore */ }
+
+      try {
+        const res = await connectionApi.getConnections();
+        const body = res?.data;
+        if (body?.success && body.data?.items) {
+          setSavedCount(body.data.items.length);
+        }
+      } catch { /* ignore */ }
+    };
+    fetchData();
+  }, [user?.userId]);
 
   const handleLogout = async () => {
     setSignOutOpen(false);
@@ -37,10 +70,6 @@ export default function VendorProfile() {
     setPw({ current: '', newPw: '', confirm: '' });
   };
 
-  const savedCount = manufacturers.filter((m) => m.saved).length;
-  const totalRequests = vendorRequests.length;
-  const pendingRequests = vendorRequests.filter((r) => r.status === 'Pending').length;
-
   return (
     <div className="max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold text-neutral-900 mb-6">Profile</h1>
@@ -51,7 +80,7 @@ export default function VendorProfile() {
           {/* Profile picture */}
           <div className="relative group shrink-0">
             <div className="w-28 h-28 rounded-full bg-accent flex items-center justify-center text-white text-3xl font-bold shadow-md">
-              V
+              {profile?.businessName?.charAt(0) || 'V'}
             </div>
             <button
               type="button"
@@ -63,7 +92,7 @@ export default function VendorProfile() {
 
           {/* Profile details */}
           <div className="flex-1 text-center sm:text-left">
-            <h2 className="text-xl font-bold text-neutral-900 mb-1">My Business</h2>
+            <h2 className="text-xl font-bold text-neutral-900 mb-1">{profile?.businessName || 'Loading…'}</h2>
             <Badge status="connected" className="mb-3">
               <Building2 className="h-3 w-3" /> Vendor
             </Badge>
@@ -73,7 +102,7 @@ export default function VendorProfile() {
                 <Mail className="h-4 w-4 text-neutral-400 shrink-0" />
                 <div>
                   <dt className="text-xs text-neutral-400">Email</dt>
-                  <dd className="text-neutral-900 font-medium">vendor@example.com</dd>
+                  <dd className="text-neutral-900 font-medium">{profile?.email || '—'}</dd>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -87,7 +116,7 @@ export default function VendorProfile() {
                 <MapPin className="h-4 w-4 text-neutral-400 shrink-0" />
                 <div>
                   <dt className="text-xs text-neutral-400">Business Address</dt>
-                  <dd className="text-neutral-900 font-medium">Cebu City, Cebu</dd>
+                  <dd className="text-neutral-900 font-medium">{profile?.businessAddress || '—'}</dd>
                 </div>
               </div>
               <div className="flex items-center gap-2">
