@@ -37,6 +37,11 @@ export const getProducts = (query?: ProductQuery) => {
   return axiosClient.get('/api/products', { params: query });
 };
 
+/** Returns products for the authenticated manufacturer (no manufacturerId needed) */
+export const getMyProducts = (query?: Omit<ProductQuery, 'manufacturerId'>) => {
+  return axiosClient.get('/api/products/mine', { params: query });
+};
+
 export const getProduct = (id: number | string) => {
   return axiosClient.get(`/api/products/${id}`);
 };
@@ -57,5 +62,5 @@ export const deleteProduct = (id: number | string) => {
   return axiosClient.delete(`/api/products/${id}`);
 };
 
-const productApi = { getProducts, getProduct, searchProducts, createProduct, updateProduct, deleteProduct };
+const productApi = { getProducts, getMyProducts, getProduct, searchProducts, createProduct, updateProduct, deleteProduct };
 export default productApi;
