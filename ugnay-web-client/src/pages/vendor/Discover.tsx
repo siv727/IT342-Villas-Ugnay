@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Bookmark, BookmarkCheck } from 'lucide-react';
 import useAppStore from '../../stores/appStore';
@@ -8,16 +8,75 @@ import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import { SearchBar, Select } from '../../components/ui/Input';
 import EmptyState from '../../components/ui/EmptyState';
+import Pagination from '../../components/ui/Pagination';
+import manufacturerApi from '../../api/manufacturerApi';
 
 export default function Discover() {
-  const { manufacturers, toggleSaveManufacturer } = useAppStore();
+  const { manufacturers: storeManufacturers, toggleSaveManufacturer } = useAppStore();
   const [search, setSearch] = useState('');
   const [province, setProvince] = useState('');
   const [city, setCity] = useState('');
   const [category, setCategory] = useState('All');
+  const [manufacturers, setManufacturers] = useState(storeManufacturers);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const PAGE_SIZE = 9;
+
+  // debounce search
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
 
   const cities: string[] = province ? psgcData[province] || [] : [];
 
+  // Fetch from API with SDD params, fallback to store
+  useEffect(() => {
+    let mounted = true;
+    const fetch = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const params: Record<string, unknown> = { page, size: PAGE_SIZE };
+        if (province) params.province = province;
+        if (city) params.city = city;
+        if (category && category !== 'All') params.category = category;
+        if (debouncedSearch) params.q = debouncedSearch;
+
+        const res = await manufacturerApi.getManufacturers(params);
+        if (mounted && res?.data) {
+          // SDD shape: { success, data: { items: [...], pagination: { page, size, total } } }
+          const body = res.data;
+          if (body.success && body.data?.items) {
+            setManufacturers(body.data.items);
+            const total = body.data.pagination?.total ?? body.data.items.length;
+            setTotalPages(Math.max(1, Math.ceil(total / PAGE_SIZE)));
+          } else if (Array.isArray(body.data)) {
+            setManufacturers(body.data);
+            setTotalPages(Math.max(1, Math.ceil(body.data.length / PAGE_SIZE)));
+          } else if (Array.isArray(body)) {
+            setManufacturers(body);
+            setTotalPages(Math.max(1, Math.ceil(body.length / PAGE_SIZE)));
+          }
+        }
+      } catch {
+        if (mounted) {
+          setError('Could not load from API, using local data');
+          setManufacturers(storeManufacturers);
+          setTotalPages(Math.max(1, Math.ceil(storeManufacturers.length / PAGE_SIZE)));
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    fetch();
+    return () => { mounted = false; };
+  }, [province, city, category, debouncedSearch, storeManufacturers, page]);
+
+  // Client-side filtering when using local data
   const filtered = useMemo(() => {
     return manufacturers.filter((m) => {
       const matchSearch = !search ||
@@ -32,6 +91,8 @@ export default function Discover() {
 
   return (
     <div>
+      {loading && <div className="mb-4 text-sm text-neutral-500">Loading manufacturers…</div>}
+      {error && <div className="mb-4 text-sm text-danger">{error}</div>}
       <h1 className="text-[32px] font-bold text-neutral-900 mb-6">Discover Manufacturers</h1>
 
       {/* Search & filters */}
@@ -71,10 +132,7 @@ export default function Discover() {
 
       {/* Results */}
       {filtered.length === 0 ? (
-        <EmptyState
-          title="No manufacturers found"
-          description="Try adjusting your filters"
-        />
+        <EmptyState title="No manufacturers found" description="Try adjusting your filters" />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filtered.map((m) => (
@@ -103,6 +161,11 @@ export default function Discover() {
               </div>
             </Card>
           ))}
+        </div>
+      )}
+      {totalPages > 1 && (
+        <div className="mt-6">
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </div>
       )}
     </div>
