@@ -27,6 +27,7 @@ const IncomingRequests = lazy(() => import('./pages/manufacturer/IncomingRequest
 const MfRequestDetail = lazy(() => import('./pages/manufacturer/ManufacturerRequestDetail'));
 const ShipmentManagement = lazy(() => import('./pages/manufacturer/ShipmentManagement'));
 const MfProfile = lazy(() => import('./pages/manufacturer/ManufacturerProfile'));
+const MfConnections = lazy(() => import('./pages/manufacturer/Connections'));
 
 /* ---------- Loading fallback ---------- */
 function PageLoader() {
@@ -102,6 +103,7 @@ export default function App() {
             <Route path="requests" element={<IncomingRequests />} />
             <Route path="requests/:id" element={<MfRequestDetail />} />
             <Route path="shipments" element={<ShipmentManagement />} />
+            <Route path="connections" element={<MfConnections />} />
             <Route path="profile" element={<MfProfile />} />
           </Route>
 
