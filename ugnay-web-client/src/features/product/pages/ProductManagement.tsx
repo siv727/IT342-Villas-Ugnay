@@ -1,15 +1,15 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, ToggleLeft, ToggleRight, Pencil, Package } from 'lucide-react';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import EmptyState from '../../components/ui/EmptyState';
-import { SearchBar } from '../../components/ui/Input';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import { Plus, ToggleLeft, ToggleRight, Pencil } from 'lucide-react';
+import Button from '../../../shared/components/ui/Button';
+import Card from '../../../shared/components/ui/Card';
+import Badge from '../../../shared/components/ui/Badge';
+import EmptyState from '../../../shared/components/ui/EmptyState';
+import { SearchBar } from '../../../shared/components/ui/Input';
+import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
 import toast from 'react-hot-toast';
-import Pagination from '../../components/ui/Pagination';
-import productApi from '../../api/productApi';
+import Pagination from '../../../shared/components/ui/Pagination';
+import productApi from '../../../features/product/api';
 
 interface ProductItem {
   id: number;

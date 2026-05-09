@@ -1,13 +1,13 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ChevronRight, ArrowLeft, Package } from 'lucide-react';
+import { ChevronRight, ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import productApi from '../../api/productApi';
-import manufacturerApi from '../../api/manufacturerApi';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import EmptyState from '../../components/ui/EmptyState';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import productApi from '../../../features/product/api';
+import manufacturerApi from '../../../features/discovery/api';
+import Button from '../../../shared/components/ui/Button';
+import Card from '../../../shared/components/ui/Card';
+import Badge from '../../../shared/components/ui/Badge';
+import EmptyState from '../../../shared/components/ui/EmptyState';
+import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
 
 interface ProductItem {
   id: number;

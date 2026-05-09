@@ -1,14 +1,14 @@
 import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronRight, Upload, X } from 'lucide-react';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import { Input, TextArea, Select } from '../../components/ui/Input';
-import { categories } from '../../data/mockData';
+import Button from '../../../shared/components/ui/Button';
+import Card from '../../../shared/components/ui/Card';
+import { Input, TextArea, Select } from '../../../shared/components/ui/Input';
+import { categories } from '../../../shared/data/mockData';
 import toast from 'react-hot-toast';
-import productApi from '../../api/productApi';
-import fileApi from '../../api/fileApi';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import productApi from '../../../features/product/api';
+import fileApi from '../../../features/file-upload/api';
+import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
 
 interface ProductItem {
   id: number;
