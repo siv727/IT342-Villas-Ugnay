@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.entity;
+package edu.cit.villas.ugnay.shared.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,29 +11,29 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "manufacturers")
-public class Manufacturer {
+@Table(name = "vendors")
+public class Vendor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "manufacturer_id")
-    private Long manufacturerId;
+    @Column(name = "vendor_id")
+    private Long vendorId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @Column(nullable = false, length = 100)
-    private String category;
+    @Column(nullable = false, length = 20)
+    private String type;
 
-    public Manufacturer() {}
+    public Vendor() {}
 
-    public Long getManufacturerId() { return manufacturerId; }
-    public void setManufacturerId(Long manufacturerId) { this.manufacturerId = manufacturerId; }
+    public Long getVendorId() { return vendorId; }
+    public void setVendorId(Long vendorId) { this.vendorId = vendorId; }
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 }

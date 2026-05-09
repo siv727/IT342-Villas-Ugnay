@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.dto;
+package edu.cit.villas.ugnay.shared.dto;
 
 import java.time.Instant;
 

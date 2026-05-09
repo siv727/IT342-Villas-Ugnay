@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.config;
+package edu.cit.villas.ugnay.shared.config;
 
 import java.util.Arrays;
 

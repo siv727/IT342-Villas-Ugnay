@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.config;
+package edu.cit.villas.ugnay.shared.config;
 
 import java.io.IOException;
 
@@ -12,8 +12,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import edu.cit.villas.ugnay.service.JwtService;
-import edu.cit.villas.ugnay.service.TokenBlacklistService;
+import edu.cit.villas.ugnay.features.auth.JwtService;
+import edu.cit.villas.ugnay.features.auth.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;

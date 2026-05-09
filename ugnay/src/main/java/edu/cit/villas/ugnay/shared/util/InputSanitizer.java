@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.util;
+package edu.cit.villas.ugnay.shared.util;
 
 import java.util.regex.Pattern;
 

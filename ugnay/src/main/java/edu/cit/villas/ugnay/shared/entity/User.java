@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.entity;
+package edu.cit.villas.ugnay.shared.entity;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
