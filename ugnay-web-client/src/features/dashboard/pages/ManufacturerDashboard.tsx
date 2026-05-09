@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Package, ClipboardList, Truck, DollarSign, ArrowRight } from 'lucide-react';
-import useAuthStore from '../../stores/authStore';
-import { StatCard } from '../../components/ui/Card';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import sampleRequestApi from '../../api/sampleRequestApi';
-import productApi from '../../api/productApi';
+import useAuthStore from '../../../features/auth/store';
+import { StatCard } from '../../../shared/components/ui/Card';
+import Card from '../../../shared/components/ui/Card';
+import Badge from '../../../shared/components/ui/Badge';
+import Button from '../../../shared/components/ui/Button';
+import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
+import sampleRequestApi from '../../../features/sample-request/api';
+import productApi from '../../../features/product/api';
 
 interface RequestItem {
   id: number;
