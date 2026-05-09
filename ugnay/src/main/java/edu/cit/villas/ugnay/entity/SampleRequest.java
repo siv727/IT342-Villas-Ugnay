@@ -20,10 +20,12 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "sample_requests")
@@ -77,5 +79,4 @@ public class SampleRequest {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-}
 }
