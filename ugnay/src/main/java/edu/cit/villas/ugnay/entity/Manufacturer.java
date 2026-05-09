@@ -9,11 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
 @Entity
 @Table(name = "manufacturers")
 public class Manufacturer {
@@ -29,4 +25,15 @@ public class Manufacturer {
 
     @Column(nullable = false, length = 100)
     private String category;
+
+    public Manufacturer() {}
+
+    public Long getManufacturerId() { return manufacturerId; }
+    public void setManufacturerId(Long manufacturerId) { this.manufacturerId = manufacturerId; }
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 }
