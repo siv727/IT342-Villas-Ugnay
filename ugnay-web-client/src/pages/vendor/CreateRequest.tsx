@@ -73,9 +73,11 @@ export default function CreateRequest() {
       await sampleRequestApi.createSampleRequest(payload);
       setLoading(false);
       setSuccessOpen(true);
-    } catch {
+    } catch (err: unknown) {
       setLoading(false);
-      setSuccessOpen(true); // Show success anyway since backend is mock
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+        || 'Failed to submit sample request. Please try again.';
+      alert(msg);
     }
   };
 
