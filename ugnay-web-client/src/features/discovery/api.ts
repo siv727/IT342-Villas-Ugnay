@@ -1,4 +1,4 @@
-import axiosClient from './axiosClient';
+import axiosClient from '../../shared/api/axiosClient';
 
 /**
  * Manufacturer Discovery API — aligned with SDD §5.2

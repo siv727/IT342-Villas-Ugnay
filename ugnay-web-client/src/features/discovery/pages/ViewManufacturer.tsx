@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, Bookmark, BookmarkCheck, ChevronRight, Package } from 'lucide-react';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import EmptyState from '../../components/ui/EmptyState';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import manufacturerApi from '../../api/manufacturerApi';
-import productApi from '../../api/productApi';
-import connectionApi from '../../api/connectionApi';
+import { MapPin, Bookmark, BookmarkCheck, ChevronRight } from 'lucide-react';
+import Badge from '../../../shared/components/ui/Badge';
+import Button from '../../../shared/components/ui/Button';
+import Card from '../../../shared/components/ui/Card';
+import EmptyState from '../../../shared/components/ui/EmptyState';
+import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
+import manufacturerApi from '../../../features/discovery/api';
+import productApi from '../../../features/product/api';
+import connectionApi from '../../../features/connection/api';
 import toast from 'react-hot-toast';
 
 interface ManufacturerDetail {

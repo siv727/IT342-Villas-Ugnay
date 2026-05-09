@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Bookmark, BookmarkCheck } from 'lucide-react';
-import { categories } from '../../data/mockData';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
-import { SearchBar } from '../../components/ui/Input';
-import EmptyState from '../../components/ui/EmptyState';
-import Pagination from '../../components/ui/Pagination';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import manufacturerApi from '../../api/manufacturerApi';
-import connectionApi from '../../api/connectionApi';
+import { categories } from '../../../shared/data/mockData';
+import Card from '../../../shared/components/ui/Card';
+import Badge from '../../../shared/components/ui/Badge';
+import Button from '../../../shared/components/ui/Button';
+import { SearchBar } from '../../../shared/components/ui/Input';
+import EmptyState from '../../../shared/components/ui/EmptyState';
+import Pagination from '../../../shared/components/ui/Pagination';
+import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
+import manufacturerApi from '../../../features/discovery/api';
+import connectionApi from '../../../features/connection/api';
 import toast from 'react-hot-toast';
 
 interface ManufacturerItem {
