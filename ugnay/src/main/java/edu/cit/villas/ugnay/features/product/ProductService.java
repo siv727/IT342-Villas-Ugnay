@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.service;
+package edu.cit.villas.ugnay.features.product;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -8,9 +8,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import edu.cit.villas.ugnay.entity.Manufacturer;
-import edu.cit.villas.ugnay.entity.Product;
-import edu.cit.villas.ugnay.repository.ProductRepository;
+import edu.cit.villas.ugnay.shared.entity.Manufacturer;
+import edu.cit.villas.ugnay.features.product.Product;
+import edu.cit.villas.ugnay.features.product.ProductRepository;
 
 @Service
 public class ProductService {

@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.controller;
+package edu.cit.villas.ugnay.features.product;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -23,12 +23,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
-import edu.cit.villas.ugnay.dto.ApiResponse;
-import edu.cit.villas.ugnay.entity.Manufacturer;
-import edu.cit.villas.ugnay.entity.Product;
-import edu.cit.villas.ugnay.entity.User;
-import edu.cit.villas.ugnay.service.ManufacturerService;
-import edu.cit.villas.ugnay.service.ProductService;
+import edu.cit.villas.ugnay.shared.dto.ApiResponse;
+import edu.cit.villas.ugnay.shared.entity.Manufacturer;
+import edu.cit.villas.ugnay.features.product.Product;
+import edu.cit.villas.ugnay.shared.entity.User;
+import edu.cit.villas.ugnay.features.discovery.ManufacturerService;
+import edu.cit.villas.ugnay.features.product.ProductService;
 
 @RestController
 @RequestMapping("/api/products")

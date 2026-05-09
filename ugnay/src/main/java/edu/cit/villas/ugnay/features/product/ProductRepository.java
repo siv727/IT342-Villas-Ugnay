@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.repository;
+package edu.cit.villas.ugnay.features.product;
 
 import java.util.List;
 
@@ -9,8 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import edu.cit.villas.ugnay.entity.Manufacturer;
-import edu.cit.villas.ugnay.entity.Product;
+import edu.cit.villas.ugnay.shared.entity.Manufacturer;
+import edu.cit.villas.ugnay.features.product.Product;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {

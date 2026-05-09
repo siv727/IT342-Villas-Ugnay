@@ -1,4 +1,6 @@
-package edu.cit.villas.ugnay.entity;
+package edu.cit.villas.ugnay.features.product;
+
+import edu.cit.villas.ugnay.shared.entity.Manufacturer;
 
 import java.math.BigDecimal;
 import java.util.List;
