@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { MapPin, CheckCircle } from 'lucide-react';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import EmptyState from '../../components/ui/EmptyState';
-import { ConfirmModal } from '../../components/ui/Modal';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import Badge from '../../../shared/components/ui/Badge';
+import Button from '../../../shared/components/ui/Button';
+import Card from '../../../shared/components/ui/Card';
+import EmptyState from '../../../shared/components/ui/EmptyState';
+import { ConfirmModal } from '../../../shared/components/ui/Modal';
+import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
 import toast from 'react-hot-toast';
-import sampleRequestApi from '../../api/sampleRequestApi';
+import sampleRequestApi from '../../../features/sample-request/api';
 
 interface ShipmentItem {
   id: number;

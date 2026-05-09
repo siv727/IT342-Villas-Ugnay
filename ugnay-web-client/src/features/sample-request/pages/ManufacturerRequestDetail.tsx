@@ -1,18 +1,18 @@
 import { useState, useEffect, useRef, type ChangeEvent } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronRight, Package, CreditCard, User, CheckCircle, XCircle, Truck, Upload, Image } from 'lucide-react';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import { Input } from '../../components/ui/Input';
-import StatusTimeline from '../../components/ui/StatusTimeline';
-import { ConfirmModal } from '../../components/ui/Modal';
-import Modal from '../../components/ui/Modal';
-import EmptyState from '../../components/ui/EmptyState';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import Badge from '../../../shared/components/ui/Badge';
+import Button from '../../../shared/components/ui/Button';
+import Card from '../../../shared/components/ui/Card';
+import { Input } from '../../../shared/components/ui/Input';
+import StatusTimeline from '../../../shared/components/ui/StatusTimeline';
+import { ConfirmModal } from '../../../shared/components/ui/Modal';
+import Modal from '../../../shared/components/ui/Modal';
+import EmptyState from '../../../shared/components/ui/EmptyState';
+import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
 import toast from 'react-hot-toast';
-import sampleRequestApi from '../../api/sampleRequestApi';
-import fileApi from '../../api/fileApi';
+import sampleRequestApi from '../../../features/sample-request/api';
+import fileApi from '../../../features/file-upload/api';
 
 const TIMELINE_STEPS = ['Pending', 'Approved', 'Paid', 'Shipped', 'Delivered', 'Completed'];
 

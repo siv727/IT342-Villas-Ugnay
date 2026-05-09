@@ -1,14 +1,14 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronRight, Minus, Plus, Shield, Loader2, CheckCircle } from 'lucide-react';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import { TextArea } from '../../components/ui/Input';
-import Modal from '../../components/ui/Modal';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import sampleRequestApi from '../../api/sampleRequestApi';
-import productApi from '../../api/productApi';
-import manufacturerApi from '../../api/manufacturerApi';
+import Button from '../../../shared/components/ui/Button';
+import Card from '../../../shared/components/ui/Card';
+import { TextArea } from '../../../shared/components/ui/Input';
+import Modal from '../../../shared/components/ui/Modal';
+import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
+import sampleRequestApi from '../../../features/sample-request/api';
+import productApi from '../../../features/product/api';
+import manufacturerApi from '../../../features/discovery/api';
 
 interface ProductItem {
   id: number;

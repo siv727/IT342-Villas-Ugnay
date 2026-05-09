@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, SlidersHorizontal } from 'lucide-react';
-import Badge from '../../components/ui/Badge';
-import Card from '../../components/ui/Card';
-import Pagination from '../../components/ui/Pagination';
-import EmptyState from '../../components/ui/EmptyState';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import sampleRequestApi from '../../api/sampleRequestApi';
+import Badge from '../../../shared/components/ui/Badge';
+import Card from '../../../shared/components/ui/Card';
+import Pagination from '../../../shared/components/ui/Pagination';
+import EmptyState from '../../../shared/components/ui/EmptyState';
+import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
+import sampleRequestApi from '../../../features/sample-request/api';
 
 interface RequestItem {
   id: number;

@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar } from 'lucide-react';
-import EmptyState from '../../components/ui/EmptyState';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import Pagination from '../../components/ui/Pagination';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import sampleRequestApi from '../../api/sampleRequestApi';
+import EmptyState from '../../../shared/components/ui/EmptyState';
+import Card from '../../../shared/components/ui/Card';
+import Badge from '../../../shared/components/ui/Badge';
+import Pagination from '../../../shared/components/ui/Pagination';
+import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
+import sampleRequestApi from '../../../features/sample-request/api';
 
 interface RequestItem {
   id: number;
