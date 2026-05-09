@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.controller;
+package edu.cit.villas.ugnay.features.payment;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import edu.cit.villas.ugnay.dto.ApiResponse;
-import edu.cit.villas.ugnay.entity.SampleRequest;
-import edu.cit.villas.ugnay.entity.User;
-import edu.cit.villas.ugnay.service.MockPaymentService;
-import edu.cit.villas.ugnay.service.SampleRequestService;
+import edu.cit.villas.ugnay.shared.dto.ApiResponse;
+import edu.cit.villas.ugnay.features.samplerequest.SampleRequest;
+import edu.cit.villas.ugnay.shared.entity.User;
+import edu.cit.villas.ugnay.features.payment.MockPaymentService;
+import edu.cit.villas.ugnay.features.samplerequest.SampleRequestService;
 
 /**
  * Payment Controller — mock PayMongo integration.
