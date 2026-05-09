@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.service;
+package edu.cit.villas.ugnay.features.fileupload;
 
 import java.util.HashMap;
 import java.util.Map;

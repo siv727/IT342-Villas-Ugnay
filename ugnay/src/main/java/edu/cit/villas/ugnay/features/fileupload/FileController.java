@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.controller;
+package edu.cit.villas.ugnay.features.fileupload;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import edu.cit.villas.ugnay.dto.ApiResponse;
-import edu.cit.villas.ugnay.entity.User;
-import edu.cit.villas.ugnay.service.MockFileStorageService;
+import edu.cit.villas.ugnay.shared.dto.ApiResponse;
+import edu.cit.villas.ugnay.shared.entity.User;
+import edu.cit.villas.ugnay.features.fileupload.MockFileStorageService;
 
 /**
  * File Upload Controller — mock Cloudinary / Supabase Storage integration.
