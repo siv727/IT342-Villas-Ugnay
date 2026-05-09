@@ -1,4 +1,4 @@
-import axiosClient from "./axiosClient";
+import axiosClient from "../../shared/api/axiosClient";
 
 export interface UserProfile {
   userId: number;

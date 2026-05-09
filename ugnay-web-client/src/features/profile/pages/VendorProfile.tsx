@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Mail, Building2, FileText, Shield, LogOut, Lock, Camera } from 'lucide-react';
-import useAuthStore from '../../stores/authStore';
-import { getUserProfile, type UserProfile } from '../../api/profileApi';
-import sampleRequestApi from '../../api/sampleRequestApi';
-import connectionApi from '../../api/connectionApi';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
-import Modal from '../../components/ui/Modal';
-import { ConfirmModal } from '../../components/ui/Modal';
-import { PasswordInput } from '../../components/ui/Input';
+import useAuthStore from '../../../features/auth/store';
+import { getUserProfile, type UserProfile } from '../../../features/profile/api';
+import sampleRequestApi from '../../../features/sample-request/api';
+import connectionApi from '../../../features/connection/api';
+import Card from '../../../shared/components/ui/Card';
+import Badge from '../../../shared/components/ui/Badge';
+import Button from '../../../shared/components/ui/Button';
+import Modal from '../../../shared/components/ui/Modal';
+import { ConfirmModal } from '../../../shared/components/ui/Modal';
+import { PasswordInput } from '../../../shared/components/ui/Input';
 import toast from 'react-hot-toast';
 
 export default function VendorProfile() {
