@@ -1,33 +1,33 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import useAuthStore from './stores/authStore';
-import AppLayout from './components/layout/AppLayout';
+import useAuthStore from '../features/auth/store';
+import AppLayout from '../shared/components/layout/AppLayout';
 
 /* ---------- Auth ---------- */
-const Login = lazy(() => import('./pages/auth/Login'));
-const Register = lazy(() => import('./pages/auth/Register'));
+const Login = lazy(() => import('../features/auth/pages/Login'));
+const Register = lazy(() => import('../features/auth/pages/Register'));
 
 /* ---------- Vendor ---------- */
-const VendorDashboard = lazy(() => import('./pages/vendor/Dashboard'));
-const Discover = lazy(() => import('./pages/vendor/Discover'));
-const ManufacturerProfileView = lazy(() => import('./pages/vendor/ManufacturerProfile'));
-const ProductDetail = lazy(() => import('./pages/vendor/ProductDetail'));
-const CreateRequest = lazy(() => import('./pages/vendor/CreateRequest'));
-const MyRequests = lazy(() => import('./pages/vendor/MyRequests'));
-const RequestDetail = lazy(() => import('./pages/vendor/RequestDetail'));
-const Connections = lazy(() => import('./pages/vendor/Connections'));
-const VendorProfile = lazy(() => import('./pages/vendor/VendorProfile'));
+const VendorDashboard = lazy(() => import('../features/dashboard/pages/VendorDashboard'));
+const Discover = lazy(() => import('../features/discovery/pages/Discover'));
+const ManufacturerProfileView = lazy(() => import('../features/discovery/pages/ViewManufacturer'));
+const ProductDetail = lazy(() => import('../features/product/pages/ProductDetail'));
+const CreateRequest = lazy(() => import('../features/sample-request/pages/CreateRequest'));
+const MyRequests = lazy(() => import('../features/sample-request/pages/MyRequests'));
+const RequestDetail = lazy(() => import('../features/sample-request/pages/RequestDetail'));
+const Connections = lazy(() => import('../features/connection/pages/VendorConnections'));
+const VendorProfile = lazy(() => import('../features/profile/pages/VendorProfile'));
 
 /* ---------- Manufacturer ---------- */
-const MfDashboard = lazy(() => import('./pages/manufacturer/Dashboard'));
-const ProductManagement = lazy(() => import('./pages/manufacturer/ProductManagement'));
-const AddEditProduct = lazy(() => import('./pages/manufacturer/AddEditProduct'));
-const IncomingRequests = lazy(() => import('./pages/manufacturer/IncomingRequests'));
-const MfRequestDetail = lazy(() => import('./pages/manufacturer/ManufacturerRequestDetail'));
-const ShipmentManagement = lazy(() => import('./pages/manufacturer/ShipmentManagement'));
-const MfProfile = lazy(() => import('./pages/manufacturer/ManufacturerProfile'));
-const MfConnections = lazy(() => import('./pages/manufacturer/Connections'));
+const MfDashboard = lazy(() => import('../features/dashboard/pages/ManufacturerDashboard'));
+const ProductManagement = lazy(() => import('../features/product/pages/ProductManagement'));
+const AddEditProduct = lazy(() => import('../features/product/pages/AddEditProduct'));
+const IncomingRequests = lazy(() => import('../features/sample-request/pages/IncomingRequests'));
+const MfRequestDetail = lazy(() => import('../features/sample-request/pages/ManufacturerRequestDetail'));
+const ShipmentManagement = lazy(() => import('../features/sample-request/pages/ShipmentManagement'));
+const MfProfile = lazy(() => import('../features/profile/pages/EditManufacturerProfile'));
+const MfConnections = lazy(() => import('../features/connection/pages/ManufacturerConnections'));
 
 /* ---------- Loading fallback ---------- */
 function PageLoader() {
