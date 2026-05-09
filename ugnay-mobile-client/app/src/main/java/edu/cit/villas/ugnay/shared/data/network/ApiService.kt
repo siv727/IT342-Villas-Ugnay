@@ -1,8 +1,8 @@
-package edu.cit.villas.ugnay.data.network
+package edu.cit.villas.ugnay.shared.data.network
 
-import edu.cit.villas.ugnay.data.model.AuthResponse
-import edu.cit.villas.ugnay.data.model.LoginRequest
-import edu.cit.villas.ugnay.data.model.RegistrationRequest
+import edu.cit.villas.ugnay.features.auth.AuthResponse
+import edu.cit.villas.ugnay.features.auth.login.LoginRequest
+import edu.cit.villas.ugnay.features.auth.register.RegistrationRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST

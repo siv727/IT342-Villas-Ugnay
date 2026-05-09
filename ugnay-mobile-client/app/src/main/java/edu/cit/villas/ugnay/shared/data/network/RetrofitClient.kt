@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.data.network
+package edu.cit.villas.ugnay.shared.data.network
 
 import okhttp3.JavaNetCookieJar
 import okhttp3.OkHttpClient
