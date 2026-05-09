@@ -1,4 +1,6 @@
-package edu.cit.villas.ugnay.entity;
+package edu.cit.villas.ugnay.features.samplerequest;
+
+import edu.cit.villas.ugnay.features.product.Product;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

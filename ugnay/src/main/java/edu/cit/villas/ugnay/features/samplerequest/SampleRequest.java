@@ -1,4 +1,7 @@
-package edu.cit.villas.ugnay.entity;
+package edu.cit.villas.ugnay.features.samplerequest;
+
+import edu.cit.villas.ugnay.shared.entity.Manufacturer;
+import edu.cit.villas.ugnay.shared.entity.Vendor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

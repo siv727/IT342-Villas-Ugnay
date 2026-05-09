@@ -1,14 +1,14 @@
-package edu.cit.villas.ugnay.repository;
+package edu.cit.villas.ugnay.features.samplerequest;
 
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import edu.cit.villas.ugnay.entity.Manufacturer;
-import edu.cit.villas.ugnay.entity.SampleRequest;
-import edu.cit.villas.ugnay.entity.RequestStatus;
-import edu.cit.villas.ugnay.entity.Vendor;
+import edu.cit.villas.ugnay.shared.entity.Manufacturer;
+import edu.cit.villas.ugnay.features.samplerequest.SampleRequest;
+import edu.cit.villas.ugnay.features.samplerequest.RequestStatus;
+import edu.cit.villas.ugnay.shared.entity.Vendor;
 
 @Repository
 public interface SampleRequestRepository extends JpaRepository<SampleRequest, Long> {

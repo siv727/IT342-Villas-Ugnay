@@ -1,4 +1,6 @@
-package edu.cit.villas.ugnay.service;
+package edu.cit.villas.ugnay.features.samplerequest;
+
+import edu.cit.villas.ugnay.features.email.MockEmailService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -6,14 +8,14 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import edu.cit.villas.ugnay.entity.Manufacturer;
-import edu.cit.villas.ugnay.entity.Product;
-import edu.cit.villas.ugnay.entity.RequestStatus;
-import edu.cit.villas.ugnay.entity.SampleRequest;
-import edu.cit.villas.ugnay.entity.SampleRequestItem;
-import edu.cit.villas.ugnay.entity.Vendor;
-import edu.cit.villas.ugnay.repository.ProductRepository;
-import edu.cit.villas.ugnay.repository.SampleRequestRepository;
+import edu.cit.villas.ugnay.shared.entity.Manufacturer;
+import edu.cit.villas.ugnay.features.product.Product;
+import edu.cit.villas.ugnay.features.samplerequest.RequestStatus;
+import edu.cit.villas.ugnay.features.samplerequest.SampleRequest;
+import edu.cit.villas.ugnay.features.samplerequest.SampleRequestItem;
+import edu.cit.villas.ugnay.shared.entity.Vendor;
+import edu.cit.villas.ugnay.features.product.ProductRepository;
+import edu.cit.villas.ugnay.features.samplerequest.SampleRequestRepository;
 
 @Service
 public class SampleRequestService {

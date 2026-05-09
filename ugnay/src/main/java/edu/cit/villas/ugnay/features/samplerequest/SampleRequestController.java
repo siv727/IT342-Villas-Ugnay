@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.controller;
+package edu.cit.villas.ugnay.features.samplerequest;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -20,18 +20,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import edu.cit.villas.ugnay.dto.ApiResponse;
-import edu.cit.villas.ugnay.entity.Manufacturer;
-import edu.cit.villas.ugnay.entity.RequestStatus;
-import edu.cit.villas.ugnay.entity.SampleRequest;
-import edu.cit.villas.ugnay.entity.SampleRequestItem;
-import edu.cit.villas.ugnay.entity.User;
-import edu.cit.villas.ugnay.entity.Vendor;
-import edu.cit.villas.ugnay.repository.ManufacturerRepository;
-import edu.cit.villas.ugnay.repository.VendorRepository;
-import edu.cit.villas.ugnay.service.ManufacturerService;
-import edu.cit.villas.ugnay.service.SampleRequestService;
-import edu.cit.villas.ugnay.service.SampleRequestService.SampleRequestItemInput;
+import edu.cit.villas.ugnay.shared.dto.ApiResponse;
+import edu.cit.villas.ugnay.shared.entity.Manufacturer;
+import edu.cit.villas.ugnay.features.samplerequest.RequestStatus;
+import edu.cit.villas.ugnay.features.samplerequest.SampleRequest;
+import edu.cit.villas.ugnay.features.samplerequest.SampleRequestItem;
+import edu.cit.villas.ugnay.shared.entity.User;
+import edu.cit.villas.ugnay.shared.entity.Vendor;
+import edu.cit.villas.ugnay.shared.repository.ManufacturerRepository;
+import edu.cit.villas.ugnay.shared.repository.VendorRepository;
+import edu.cit.villas.ugnay.features.discovery.ManufacturerService;
+import edu.cit.villas.ugnay.features.samplerequest.SampleRequestService;
+import edu.cit.villas.ugnay.features.samplerequest.SampleRequestService.SampleRequestItemInput;
 
 @RestController
 @RequestMapping("/api/sample-requests")

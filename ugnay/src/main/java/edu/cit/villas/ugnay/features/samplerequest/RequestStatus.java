@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.entity;
+package edu.cit.villas.ugnay.features.samplerequest;
 
 public enum RequestStatus {
     PENDING,
