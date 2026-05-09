@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.controller;
+package edu.cit.villas.ugnay.features.discovery;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import edu.cit.villas.ugnay.dto.ApiResponse;
-import edu.cit.villas.ugnay.entity.Manufacturer;
-import edu.cit.villas.ugnay.service.ManufacturerService;
+import edu.cit.villas.ugnay.shared.dto.ApiResponse;
+import edu.cit.villas.ugnay.shared.entity.Manufacturer;
+import edu.cit.villas.ugnay.features.discovery.ManufacturerService;
 
 @RestController
 @RequestMapping("/api/manufacturers")

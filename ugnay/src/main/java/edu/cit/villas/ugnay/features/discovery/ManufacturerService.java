@@ -1,12 +1,12 @@
-package edu.cit.villas.ugnay.service;
+package edu.cit.villas.ugnay.features.discovery;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import edu.cit.villas.ugnay.entity.Manufacturer;
-import edu.cit.villas.ugnay.entity.User;
-import edu.cit.villas.ugnay.repository.ManufacturerRepository;
+import edu.cit.villas.ugnay.shared.entity.Manufacturer;
+import edu.cit.villas.ugnay.shared.entity.User;
+import edu.cit.villas.ugnay.shared.repository.ManufacturerRepository;
 
 @Service
 public class ManufacturerService {
