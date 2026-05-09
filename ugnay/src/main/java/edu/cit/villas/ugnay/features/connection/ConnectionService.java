@@ -1,14 +1,14 @@
-package edu.cit.villas.ugnay.service;
+package edu.cit.villas.ugnay.features.connection;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import edu.cit.villas.ugnay.entity.Connection;
-import edu.cit.villas.ugnay.entity.Manufacturer;
-import edu.cit.villas.ugnay.entity.Vendor;
-import edu.cit.villas.ugnay.repository.ConnectionRepository;
+import edu.cit.villas.ugnay.features.connection.Connection;
+import edu.cit.villas.ugnay.shared.entity.Manufacturer;
+import edu.cit.villas.ugnay.shared.entity.Vendor;
+import edu.cit.villas.ugnay.features.connection.ConnectionRepository;
 
 @Service
 public class ConnectionService {
