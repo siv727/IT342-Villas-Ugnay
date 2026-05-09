@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Mail, Building2, FileText, Shield, LogOut, Lock, Camera, Package } from 'lucide-react';
+import { MapPin, Mail, Building2, FileText, Shield, LogOut, Lock, Camera } from 'lucide-react';
 import useAuthStore from '../../stores/authStore';
 import { getUserProfile, type UserProfile } from '../../api/profileApi';
 import sampleRequestApi from '../../api/sampleRequestApi';
-import productApi from '../../api/productApi';
+import connectionApi from '../../api/connectionApi';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
@@ -13,7 +13,7 @@ import { ConfirmModal } from '../../components/ui/Modal';
 import { PasswordInput } from '../../components/ui/Input';
 import toast from 'react-hot-toast';
 
-export default function ManufacturerProfile() {
+export default function VendorProfile() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
@@ -22,7 +22,7 @@ export default function ManufacturerProfile() {
   const [pw, setPw] = useState({ current: '', newPw: '', confirm: '' });
   const [pwError, setPwError] = useState('');
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [totalProducts, setTotalProducts] = useState(0);
+  const [savedCount, setSavedCount] = useState(0);
   const [totalRequests, setTotalRequests] = useState(0);
   const [pendingRequests, setPendingRequests] = useState(0);
 
@@ -44,10 +44,10 @@ export default function ManufacturerProfile() {
       } catch { /* ignore */ }
 
       try {
-        const res = await productApi.getMyProducts();
+        const res = await connectionApi.getConnections();
         const body = res?.data;
         if (body?.success && body.data?.items) {
-          setTotalProducts(body.data.items.length);
+          setSavedCount(body.data.items.length);
         }
       } catch { /* ignore */ }
     };
@@ -77,9 +77,10 @@ export default function ManufacturerProfile() {
       {/* Profile Card */}
       <Card className="mb-6">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+          {/* Profile picture */}
           <div className="relative group shrink-0">
-            <div className="w-28 h-28 rounded-full bg-primary flex items-center justify-center text-white text-3xl font-bold shadow-md">
-              {profile?.businessName?.charAt(0) || 'M'}
+            <div className="w-28 h-28 rounded-full bg-accent flex items-center justify-center text-white text-3xl font-bold shadow-md">
+              {profile?.businessName?.charAt(0) || 'V'}
             </div>
             <button
               type="button"
@@ -89,10 +90,11 @@ export default function ManufacturerProfile() {
             </button>
           </div>
 
+          {/* Profile details */}
           <div className="flex-1 text-center sm:text-left">
             <h2 className="text-xl font-bold text-neutral-900 mb-1">{profile?.businessName || 'Loading…'}</h2>
-            <Badge status="in-transit" className="mb-3">
-              <Package className="h-3 w-3" /> Manufacturer
+            <Badge status="connected" className="mb-3">
+              <Building2 className="h-3 w-3" /> Vendor
             </Badge>
 
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 mt-4 text-sm">
@@ -121,7 +123,7 @@ export default function ManufacturerProfile() {
                 <Building2 className="h-4 w-4 text-neutral-400 shrink-0" />
                 <div>
                   <dt className="text-xs text-neutral-400">Role</dt>
-                  <dd className="text-neutral-900 font-medium capitalize">{user?.role || 'manufacturer'}</dd>
+                  <dd className="text-neutral-900 font-medium capitalize">{user?.role || 'vendor'}</dd>
                 </div>
               </div>
             </dl>
@@ -130,15 +132,7 @@ export default function ManufacturerProfile() {
       </Card>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <Card className="text-center">
-          <p className="text-2xl font-bold text-primary">{totalProducts}</p>
-          <p className="text-xs text-neutral-400 mt-1">Total Products</p>
-        </Card>
-        <Card className="text-center">
-          <p className="text-2xl font-bold text-accent">—</p>
-          <p className="text-xs text-neutral-400 mt-1">Active</p>
-        </Card>
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <Card className="text-center">
           <p className="text-2xl font-bold text-primary">{totalRequests}</p>
           <p className="text-xs text-neutral-400 mt-1">Total Requests</p>
@@ -146,6 +140,10 @@ export default function ManufacturerProfile() {
         <Card className="text-center">
           <p className="text-2xl font-bold text-highlight">{pendingRequests}</p>
           <p className="text-xs text-neutral-400 mt-1">Pending</p>
+        </Card>
+        <Card className="text-center">
+          <p className="text-2xl font-bold text-accent">{savedCount}</p>
+          <p className="text-xs text-neutral-400 mt-1">Saved Manufacturers</p>
         </Card>
       </div>
 
@@ -176,6 +174,7 @@ export default function ManufacturerProfile() {
         <LogOut className="h-4 w-4" /> Sign Out
       </Button>
 
+      {/* Sign out confirmation */}
       <ConfirmModal
         open={signOutOpen}
         onClose={() => setSignOutOpen(false)}
@@ -186,6 +185,7 @@ export default function ManufacturerProfile() {
         variant="danger"
       />
 
+      {/* Change Password Modal */}
       <Modal open={pwOpen} onClose={() => setPwOpen(false)} title="Change Password">
         <div className="space-y-4">
           {pwError && <p className="text-sm text-danger">{pwError}</p>}

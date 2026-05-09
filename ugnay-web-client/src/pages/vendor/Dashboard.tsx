@@ -1,22 +1,54 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Bookmark, CreditCard, CheckCircle } from 'lucide-react';
 import useAuthStore from '../../stores/authStore';
-import useAppStore from '../../stores/appStore';
 import { StatCard } from '../../components/ui/Card';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import sampleRequestApi from '../../api/sampleRequestApi';
+import connectionApi from '../../api/connectionApi';
+
+interface RequestItem {
+  id: number;
+  status: string;
+  createdAt: string;
+  items?: { productName?: string; quantity?: number }[];
+}
 
 export default function VendorDashboard() {
   const user = useAuthStore((s) => s.user);
-  const requests = useAppStore((s) => s.vendorRequests);
-  const manufacturers = useAppStore((s) => s.manufacturers);
+  const [requests, setRequests] = useState<RequestItem[]>([]);
+  const [savedCount, setSavedCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const res = await sampleRequestApi.getSampleRequests();
+        const body = res?.data;
+        if (body?.success && body.data?.items) setRequests(body.data.items);
+      } catch { /* empty state */ }
+
+      try {
+        const res = await connectionApi.getConnections();
+        const body = res?.data;
+        if (body?.success && body.data?.items) setSavedCount(body.data.items.length);
+      } catch { /* empty state */ }
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
+
+  if (loading) return <LoadingSpinner label="Loading dashboard…" />;
 
   const stats = {
-    active: requests.filter((r) => ['Pending', 'Approved', 'In Transit'].includes(r.status)).length,
-    saved: manufacturers.filter((m) => m.saved).length,
-    pendingPayments: requests.filter((r) => r.status === 'Approved' && r.paymentStatus !== 'Paid').length,
-    completed: requests.filter((r) => r.status === 'Completed').length,
+    active: requests.filter((r) => ['PENDING', 'APPROVED', 'SHIPPED'].includes(r.status)).length,
+    saved: savedCount,
+    pendingPayments: requests.filter((r) => r.status === 'APPROVED').length,
+    completed: requests.filter((r) => r.status === 'COMPLETED').length,
   };
 
   const recentRequests = [...requests]
@@ -34,7 +66,6 @@ export default function VendorDashboard() {
         </p>
       </div>
 
-      {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard icon={Calendar} value={stats.active} label="Active Requests" iconColor="text-primary" />
         <StatCard icon={Bookmark} value={stats.saved} label="Saved Manufacturers" iconColor="text-accent" />
@@ -42,46 +73,43 @@ export default function VendorDashboard() {
         <StatCard icon={CheckCircle} value={stats.completed} label="Completed Requests" iconColor="text-success" />
       </div>
 
-      {/* Recent requests */}
       <Card className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-neutral-900">Recent Sample Requests</h2>
-          <Link to="/vendor/requests" className="text-sm text-primary hover:underline font-medium">
-            View all &rarr;
-          </Link>
+          <Link to="/vendor/requests" className="text-sm text-primary hover:underline font-medium">View all &rarr;</Link>
         </div>
         <div className="space-y-3">
-          {recentRequests.map((req) => (
-            <Link
-              key={req.id}
-              to={`/vendor/requests/${req.id}`}
-              className="flex items-center justify-between p-3 rounded-xl hover:bg-neutral-50 transition-colors group"
-            >
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-neutral-900 truncate">{req.productName}</p>
-                <p className="text-xs text-neutral-400">{req.manufacturerName}</p>
-              </div>
-              <div className="text-right mx-4 hidden sm:block">
-                <p className="text-sm font-semibold text-primary">&peso; {req.total.toLocaleString()}</p>
-                <p className="text-xs text-neutral-400">{req.quantity} {req.unit}(s)</p>
-              </div>
-              <div className="text-right">
-                <Badge status={req.status.toLowerCase().replace(' ', '-')} />
-                <p className="text-xs text-neutral-400 mt-1">{req.createdAt}</p>
-              </div>
-            </Link>
-          ))}
+          {recentRequests.length === 0 ? (
+            <p className="text-sm text-neutral-400">No requests yet. Start by discovering manufacturers.</p>
+          ) : (
+            recentRequests.map((req) => {
+              const firstItem = req.items?.[0];
+              return (
+                <Link
+                  key={req.id}
+                  to={`/vendor/requests/${req.id}`}
+                  className="flex items-center justify-between p-3 rounded-xl hover:bg-neutral-50 transition-colors group"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-neutral-900 truncate">
+                      {firstItem?.productName || `Request #${req.id}`}
+                    </p>
+                    <p className="text-xs text-neutral-400">{req.items?.length || 0} item(s)</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge status={req.status.toLowerCase()} />
+                    <p className="text-xs text-neutral-400 mt-1">{new Date(req.createdAt).toLocaleDateString('en-PH')}</p>
+                  </div>
+                </Link>
+              );
+            })
+          )}
         </div>
       </Card>
 
-      {/* Quick actions */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <Link to="/vendor/discover">
-          <Button>Discover Manufacturers</Button>
-        </Link>
-        <Link to="/vendor/requests">
-          <Button variant="secondary">View My Requests</Button>
-        </Link>
+        <Link to="/vendor/discover"><Button>Discover Manufacturers</Button></Link>
+        <Link to="/vendor/requests"><Button variant="secondary">View My Requests</Button></Link>
       </div>
     </div>
   );
