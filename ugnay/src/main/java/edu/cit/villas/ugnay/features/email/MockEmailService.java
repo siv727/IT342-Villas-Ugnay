@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.service;
+package edu.cit.villas.ugnay.features.email;
 
 import org.springframework.stereotype.Service;
 
