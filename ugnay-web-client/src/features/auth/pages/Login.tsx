@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import useAuthStore from '../../stores/authStore';
-import { Input, PasswordInput } from '../../components/ui/Input';
-import Button from '../../components/ui/Button';
+import useAuthStore from '../../../features/auth/store';
+import { Input, PasswordInput } from '../../../shared/components/ui/Input';
+import Button from '../../../shared/components/ui/Button';
 
 export default function Login() {
   const [email, setEmail] = useState('');

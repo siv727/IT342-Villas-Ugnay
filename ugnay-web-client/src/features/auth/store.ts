@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { loginUser, registerUser, logoutUser, type LoginCredentials, type RegisterData } from '../api/authApi';
+import { loginUser, registerUser, logoutUser, type LoginCredentials, type RegisterData } from '../../features/auth/api';
 import type { AxiosError } from 'axios';
 
 interface AuthUser {
