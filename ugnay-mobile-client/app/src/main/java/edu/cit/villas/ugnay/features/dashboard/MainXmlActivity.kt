@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.activities
+package edu.cit.villas.ugnay.features.dashboard
 
 import android.content.Intent
 import android.os.Bundle
@@ -13,7 +13,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import edu.cit.villas.ugnay.R
-import edu.cit.villas.ugnay.data.network.ApiService
+import edu.cit.villas.ugnay.features.auth.login.LoginActivity
+import edu.cit.villas.ugnay.shared.data.network.ApiService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
