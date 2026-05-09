@@ -5,8 +5,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,6 +37,8 @@ import edu.cit.villas.ugnay.service.SampleRequestService.SampleRequestItemInput;
 @RequestMapping("/api/sample-requests")
 public class SampleRequestController {
 
+    private static final Logger log = LoggerFactory.getLogger(SampleRequestController.class);
+
     private final SampleRequestService sampleRequestService;
     private final ManufacturerService manufacturerService;
     private final ManufacturerRepository manufacturerRepository;
@@ -56,6 +59,10 @@ public class SampleRequestController {
             @AuthenticationPrincipal User user,
             @RequestBody Map<String, Object> body) {
         try {
+            log.info("=== CREATE SAMPLE REQUEST ===");
+            log.info("User: {}", user != null ? user.getUsername() : "NULL");
+            log.info("Body: {}", body);
+
             Vendor vendor = vendorRepository.findByUser(user)
                     .orElseThrow(() -> new IllegalArgumentException("Vendor profile not found"));
 
@@ -71,10 +78,17 @@ public class SampleRequestController {
                 items.add(new SampleRequestItemInput(productId, quantity));
             }
 
+            log.info("Items count: {}", items.size());
             SampleRequest request = sampleRequestService.createRequest(vendor, manufacturer, items);
+            log.info("=== REQUEST SAVED, ID: {} ===", request.getRequestId());
             return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(toDetailMap(request)));
         } catch (IllegalArgumentException e) {
+            log.warn("CREATE REQUEST VALIDATION ERROR: {}", e.getMessage());
             return ResponseEntity.badRequest().body(ApiResponse.error("VALID-001", e.getMessage(), null));
+        } catch (Exception e) {
+            log.error("CREATE REQUEST ERROR", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("SYSTEM-001", e.getMessage(), null));
         }
     }
 
@@ -98,7 +112,7 @@ public class SampleRequestController {
             }
 
             Map<String, Object> data = new LinkedHashMap<>();
-            data.put("items", requests.stream().map(this::toListMap).collect(Collectors.toList()));
+            data.put("items", requests.stream().map(this::toListMap).toList());
             data.put("pagination", Map.of("page", 1, "size", requests.size(), "total", requests.size()));
 
             return ResponseEntity.ok(ApiResponse.success(data));
@@ -210,9 +224,9 @@ public class SampleRequestController {
     private Map<String, Object> toListMap(SampleRequest r) {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("id", r.getRequestId());
-        map.put("vendorId", r.getVendor().getVendorId());
-        map.put("manufacturerId", r.getManufacturer().getManufacturerId());
-        map.put("items", r.getItems().stream().map(this::toItemMap).collect(Collectors.toList()));
+        map.put("vendorId", r.getVendor() != null ? r.getVendor().getVendorId() : null);
+        map.put("manufacturerId", r.getManufacturer() != null ? r.getManufacturer().getManufacturerId() : null);
+        map.put("items", r.getItems().stream().map(this::toItemMap).toList());
         map.put("status", r.getRequestStatus().name());
         map.put("deliveryFee", r.getDeliveryFee());
         map.put("trackingNumber", r.getTrackingNumber());
@@ -223,9 +237,9 @@ public class SampleRequestController {
     private Map<String, Object> toDetailMap(SampleRequest r) {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("id", r.getRequestId());
-        map.put("vendorId", r.getVendor().getVendorId());
-        map.put("manufacturerId", r.getManufacturer().getManufacturerId());
-        map.put("items", r.getItems().stream().map(this::toItemMap).collect(Collectors.toList()));
+        map.put("vendorId", r.getVendor() != null ? r.getVendor().getVendorId() : null);
+        map.put("manufacturerId", r.getManufacturer() != null ? r.getManufacturer().getManufacturerId() : null);
+        map.put("items", r.getItems().stream().map(this::toItemMap).toList());
         map.put("status", r.getRequestStatus().name());
         map.put("deliveryFee", r.getDeliveryFee());
         map.put("paymentId", r.getPaymentId());
