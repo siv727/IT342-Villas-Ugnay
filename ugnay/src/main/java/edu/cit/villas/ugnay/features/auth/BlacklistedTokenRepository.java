@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.repository;
+package edu.cit.villas.ugnay.features.auth;
 
 import java.time.Instant;
 
@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import edu.cit.villas.ugnay.entity.BlacklistedToken;
+import edu.cit.villas.ugnay.features.auth.BlacklistedToken;
 
 @Repository
 public interface BlacklistedTokenRepository extends JpaRepository<BlacklistedToken, Long> {

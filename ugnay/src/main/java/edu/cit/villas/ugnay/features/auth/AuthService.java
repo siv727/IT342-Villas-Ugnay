@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.service;
+package edu.cit.villas.ugnay.features.auth;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,16 +8,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import edu.cit.villas.ugnay.dto.LoginRequest;
-import edu.cit.villas.ugnay.dto.RegistrationRequest;
-import edu.cit.villas.ugnay.entity.Manufacturer;
-import edu.cit.villas.ugnay.entity.RefreshToken;
-import edu.cit.villas.ugnay.entity.User;
-import edu.cit.villas.ugnay.entity.Vendor;
-import edu.cit.villas.ugnay.repository.ManufacturerRepository;
-import edu.cit.villas.ugnay.repository.UserRepository;
-import edu.cit.villas.ugnay.repository.VendorRepository;
-import edu.cit.villas.ugnay.util.InputSanitizer;
+import edu.cit.villas.ugnay.features.auth.login.LoginRequest;
+import edu.cit.villas.ugnay.features.auth.register.RegistrationRequest;
+import edu.cit.villas.ugnay.shared.entity.Manufacturer;
+import edu.cit.villas.ugnay.features.auth.RefreshToken;
+import edu.cit.villas.ugnay.shared.entity.User;
+import edu.cit.villas.ugnay.shared.entity.Vendor;
+import edu.cit.villas.ugnay.shared.repository.ManufacturerRepository;
+import edu.cit.villas.ugnay.shared.repository.UserRepository;
+import edu.cit.villas.ugnay.shared.repository.VendorRepository;
+import edu.cit.villas.ugnay.shared.util.InputSanitizer;
 
 import java.time.Instant;
 

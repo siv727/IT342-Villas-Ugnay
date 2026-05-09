@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.service;
+package edu.cit.villas.ugnay.features.auth;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -8,9 +8,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import edu.cit.villas.ugnay.entity.RefreshToken;
-import edu.cit.villas.ugnay.entity.User;
-import edu.cit.villas.ugnay.repository.RefreshTokenRepository;
+import edu.cit.villas.ugnay.features.auth.RefreshToken;
+import edu.cit.villas.ugnay.shared.entity.User;
+import edu.cit.villas.ugnay.features.auth.RefreshTokenRepository;
 
 @Service
 public class RefreshTokenService {

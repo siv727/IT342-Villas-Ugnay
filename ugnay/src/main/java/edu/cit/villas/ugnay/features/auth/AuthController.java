@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.controller;
+package edu.cit.villas.ugnay.features.auth;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -7,12 +7,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import edu.cit.villas.ugnay.dto.LoginRequest;
-import edu.cit.villas.ugnay.dto.LoginResponse;
-import edu.cit.villas.ugnay.dto.RegistrationRequest;
-import edu.cit.villas.ugnay.entity.RefreshToken;
-import edu.cit.villas.ugnay.entity.User;
-import edu.cit.villas.ugnay.service.AuthService;
+import edu.cit.villas.ugnay.features.auth.login.LoginRequest;
+import edu.cit.villas.ugnay.features.auth.login.LoginResponse;
+import edu.cit.villas.ugnay.features.auth.register.RegistrationRequest;
+import edu.cit.villas.ugnay.features.auth.RefreshToken;
+import edu.cit.villas.ugnay.shared.entity.User;
+import edu.cit.villas.ugnay.features.auth.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

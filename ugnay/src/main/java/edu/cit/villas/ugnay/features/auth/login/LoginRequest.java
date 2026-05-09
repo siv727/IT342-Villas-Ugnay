@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.dto;
+package edu.cit.villas.ugnay.features.auth.login;
 
 import lombok.Data;
 

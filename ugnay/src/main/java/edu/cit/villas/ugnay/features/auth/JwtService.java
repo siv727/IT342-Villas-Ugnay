@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.service;
+package edu.cit.villas.ugnay.features.auth;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

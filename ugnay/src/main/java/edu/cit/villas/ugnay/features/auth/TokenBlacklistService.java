@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.service;
+package edu.cit.villas.ugnay.features.auth;
 
 import java.time.Instant;
 
@@ -6,8 +6,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import edu.cit.villas.ugnay.entity.BlacklistedToken;
-import edu.cit.villas.ugnay.repository.BlacklistedTokenRepository;
+import edu.cit.villas.ugnay.features.auth.BlacklistedToken;
+import edu.cit.villas.ugnay.features.auth.BlacklistedTokenRepository;
 
 @Service
 public class TokenBlacklistService {
