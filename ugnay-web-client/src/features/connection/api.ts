@@ -1,4 +1,4 @@
-import axiosClient from './axiosClient';
+import axiosClient from '../../shared/api/axiosClient';
 
 /**
  * Save/Follow Business API — aligned with SDD §5.2

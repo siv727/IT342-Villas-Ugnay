@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BookmarkCheck, MapPin, ExternalLink } from 'lucide-react';
-import connectionApi from '../../api/connectionApi';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
-import EmptyState from '../../components/ui/EmptyState';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import connectionApi from '../../../features/connection/api';
+import Card from '../../../shared/components/ui/Card';
+import Badge from '../../../shared/components/ui/Badge';
+import Button from '../../../shared/components/ui/Button';
+import EmptyState from '../../../shared/components/ui/EmptyState';
+import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 interface ConnectionItem {

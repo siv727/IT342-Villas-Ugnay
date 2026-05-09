@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Users } from 'lucide-react';
-import connectionApi from '../../api/connectionApi';
-import Badge from '../../components/ui/Badge';
-import Card from '../../components/ui/Card';
-import EmptyState from '../../components/ui/EmptyState';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import connectionApi from '../../../features/connection/api';
+import Badge from '../../../shared/components/ui/Badge';
+import Card from '../../../shared/components/ui/Card';
+import EmptyState from '../../../shared/components/ui/EmptyState';
+import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
 
 interface ConnectionItem {
   id: number;
