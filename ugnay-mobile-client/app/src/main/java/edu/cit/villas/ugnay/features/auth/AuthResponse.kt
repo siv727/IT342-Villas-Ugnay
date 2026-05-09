@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.data.model
+package edu.cit.villas.ugnay.features.auth
 
 data class AuthResponse(
     val userId: Long,

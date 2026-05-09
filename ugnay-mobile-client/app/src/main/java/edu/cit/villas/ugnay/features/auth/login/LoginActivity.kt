@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.activities
+package edu.cit.villas.ugnay.features.auth.login
 
 import android.content.Intent
 import android.os.Bundle
@@ -9,8 +9,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import edu.cit.villas.ugnay.R
-import edu.cit.villas.ugnay.data.model.LoginRequest
-import edu.cit.villas.ugnay.data.network.ApiService
+import edu.cit.villas.ugnay.features.auth.login.LoginRequest
+import edu.cit.villas.ugnay.features.auth.register.RegisterActivity
+import edu.cit.villas.ugnay.features.dashboard.MainXmlActivity
+import edu.cit.villas.ugnay.shared.data.network.ApiService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

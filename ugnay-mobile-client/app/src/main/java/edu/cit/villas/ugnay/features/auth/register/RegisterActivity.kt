@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.activities
+package edu.cit.villas.ugnay.features.auth.register
 
 import android.os.Bundle
 import android.view.View
@@ -10,8 +10,8 @@ import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import edu.cit.villas.ugnay.R
-import edu.cit.villas.ugnay.data.model.RegistrationRequest
-import edu.cit.villas.ugnay.data.network.ApiService
+import edu.cit.villas.ugnay.features.auth.register.RegistrationRequest
+import edu.cit.villas.ugnay.shared.data.network.ApiService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
