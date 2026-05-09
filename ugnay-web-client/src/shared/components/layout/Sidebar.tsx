@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Search, FileText, Users, User, Package,
   ClipboardList, Truck, ChevronLeft, ChevronRight, LogOut
 } from 'lucide-react';
-import useAuthStore from '../../stores/authStore';
+import useAuthStore from '../../../features/auth/store';
 import { ConfirmModal } from '../ui/Modal';
 
 const vendorNav = [

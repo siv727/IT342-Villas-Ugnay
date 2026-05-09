@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Menu, LogOut, MapPin, Building2 } from 'lucide-react';
-import useAuthStore from '../../stores/authStore';
-import { getUserProfile, type UserProfile } from '../../api/profileApi';
+import useAuthStore from '../../../features/auth/store';
+import { getUserProfile, type UserProfile } from '../../../features/profile/api';
 import { ConfirmModal } from '../ui/Modal';
 
 interface NavbarProps {
