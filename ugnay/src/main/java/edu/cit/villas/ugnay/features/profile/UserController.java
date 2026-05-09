@@ -1,4 +1,4 @@
-package edu.cit.villas.ugnay.controller;
+package edu.cit.villas.ugnay.features.profile;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import edu.cit.villas.ugnay.dto.ApiResponse;
-import edu.cit.villas.ugnay.entity.User;
-import edu.cit.villas.ugnay.repository.UserRepository;
+import edu.cit.villas.ugnay.shared.dto.ApiResponse;
+import edu.cit.villas.ugnay.shared.entity.User;
+import edu.cit.villas.ugnay.shared.repository.UserRepository;
 
 /**
  * User Profile Controller — matches frontend profileApi.ts endpoints.
