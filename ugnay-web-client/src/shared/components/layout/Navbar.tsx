@@ -94,7 +94,7 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
                   </div>
                   <div className="flex items-center gap-1 text-xs text-neutral-400">
                     <MapPin className="h-3 w-3" />
-                    <span>{profile?.businessAddress || `User #${user?.userId}`}</span>
+                    <span>{profile?.businessAddress || 'No address set'}</span>
                   </div>
                 </div>
 

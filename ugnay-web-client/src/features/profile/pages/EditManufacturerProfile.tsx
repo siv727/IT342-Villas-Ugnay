@@ -25,6 +25,7 @@ export default function ManufacturerProfile() {
   const [totalProducts, setTotalProducts] = useState(0);
   const [totalRequests, setTotalRequests] = useState(0);
   const [pendingRequests, setPendingRequests] = useState(0);
+  const [activeRequests, setActiveRequests] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,6 +41,7 @@ export default function ManufacturerProfile() {
         if (body?.success && body.data?.items) {
           setTotalRequests(body.data.items.length);
           setPendingRequests(body.data.items.filter((r: { status: string }) => r.status === 'PENDING').length);
+          setActiveRequests(body.data.items.filter((r: { status: string }) => !['COMPLETED', 'CANCELLED', 'REJECTED'].includes(r.status)).length);
         }
       } catch { /* ignore */ }
 
@@ -106,7 +108,7 @@ export default function ManufacturerProfile() {
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-neutral-400 shrink-0" />
                 <div>
-                  <dt className="text-xs text-neutral-400">User ID</dt>
+                  <dt className="text-xs text-neutral-400">Account ID</dt>
                   <dd className="text-neutral-900 font-medium font-mono">#{user?.userId}</dd>
                 </div>
               </div>
@@ -136,7 +138,7 @@ export default function ManufacturerProfile() {
           <p className="text-xs text-neutral-400 mt-1">Total Products</p>
         </Card>
         <Card className="text-center">
-          <p className="text-2xl font-bold text-accent">—</p>
+          <p className="text-2xl font-bold text-accent">{activeRequests}</p>
           <p className="text-xs text-neutral-400 mt-1">Active</p>
         </Card>
         <Card className="text-center">

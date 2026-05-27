@@ -108,7 +108,7 @@ export default function VendorProfile() {
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-neutral-400 shrink-0" />
                 <div>
-                  <dt className="text-xs text-neutral-400">User ID</dt>
+                  <dt className="text-xs text-neutral-400">Account ID</dt>
                   <dd className="text-neutral-900 font-medium font-mono">#{user?.userId}</dd>
                 </div>
               </div>
