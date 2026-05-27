@@ -64,6 +64,16 @@ export const updateSampleRequestStatus = (
   return axiosClient.put(`/api/sample-requests/${id}/status`, { status, trackingNumber });
 };
 
+/** Vendor completes a delivered request */
+export const completeSampleRequest = (id: number | string) => {
+  return axiosClient.put(`/api/sample-requests/${id}/complete`);
+};
+
+/** Manufacturer saves delivery proof URL */
+export const updateDeliveryProof = (id: number | string, deliveryProofUrl: string) => {
+  return axiosClient.put(`/api/sample-requests/${id}/delivery-proof`, { deliveryProofUrl });
+};
+
 const sampleRequestApi = {
   createSampleRequest,
   getSampleRequests,
@@ -72,6 +82,8 @@ const sampleRequestApi = {
   rejectSampleRequest,
   cancelSampleRequest,
   updateSampleRequestStatus,
+  completeSampleRequest,
+  updateDeliveryProof,
 };
 
 export default sampleRequestApi;

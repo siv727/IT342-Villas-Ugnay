@@ -1,16 +1,13 @@
 import axiosClient from '../../shared/api/axiosClient';
 
 /**
- * File Upload API — aligned with SDD §5.2
+ * File Upload API — Supabase Storage integration
  *
  * POST /api/files/upload   — multipart/form-data { file, context }
- * GET  /api/files/{id}     — get file metadata / download
- *
- * NOTE: File upload (Supabase Storage) is not yet configured.
- * Frontend displays file name + local preview. No actual upload occurs.
+ * GET  /api/files/{id}     — get file metadata
  */
 
-export type FileContext = 'PRODUCT_IMAGE' | 'DTI_CERT' | 'DELIVERY_PROOF';
+export type FileContext = 'PRODUCT_IMAGE' | 'DTI_CERT' | 'DELIVERY_PROOF' | 'BUSINESS_PERMIT';
 
 export interface UploadedFile {
   id: string;
@@ -19,29 +16,19 @@ export interface UploadedFile {
   fileType: string;
 }
 
-/** Upload a file (mocked — returns local blob URL) */
+/** Upload a file to Supabase Storage via backend */
 export const uploadFile = async (
   file: File,
   context: FileContext,
 ): Promise<UploadedFile> => {
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('context', context);
-    const res = await axiosClient.post('/api/files/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    if (res.data?.success && res.data.data?.file) return res.data.data.file;
-    return res.data;
-  } catch {
-    // Mock: return a local blob URL so the UI can preview
-    return {
-      id: `mock_file_${Date.now()}`,
-      url: URL.createObjectURL(file),
-      fileName: file.name,
-      fileType: file.type,
-    };
-  }
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('context', context);
+  const res = await axiosClient.post('/api/files/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  if (res.data?.success && res.data.data?.file) return res.data.data.file;
+  return res.data;
 };
 
 /** Get file metadata */
