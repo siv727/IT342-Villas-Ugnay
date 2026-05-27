@@ -15,12 +15,26 @@ export interface RegisterData {
   role: string;
   category?: string;
   type?: string;
+  regionCode?: string;
+  provinceCode?: string;
+  cityCode?: string;
+  barangayCode?: string;
+  streetAddress?: string;
 }
 
 export interface AuthResponse {
   userId: number;
   role: string;
   message: string;
+}
+
+export interface GoogleAuthResponse {
+  userId?: number;
+  role?: string;
+  message: string;
+  needsRole: boolean;
+  email?: string;
+  name?: string;
 }
 
 export const loginUser = async (credentials: LoginCredentials): Promise<AuthResponse> => {
@@ -30,6 +44,11 @@ export const loginUser = async (credentials: LoginCredentials): Promise<AuthResp
 
 export const registerUser = async (userData: RegisterData): Promise<AuthResponse> => {
   const response = await axiosClient.post("/api/auth/register", userData);
+  return response.data;
+};
+
+export const googleLogin = async (idToken: string, role?: string): Promise<GoogleAuthResponse> => {
+  const response = await axiosClient.post("/api/auth/google", { idToken, role });
   return response.data;
 };
 

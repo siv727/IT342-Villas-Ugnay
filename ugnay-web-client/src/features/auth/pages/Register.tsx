@@ -1,9 +1,13 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useRef, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
 import toast from 'react-hot-toast';
 import useAuthStore from '../../../features/auth/store';
-import { Input, PasswordInput, TextArea, FileUpload } from '../../../shared/components/ui/Input';
+import { Input, PasswordInput, FileUpload } from '../../../shared/components/ui/Input';
 import Button from '../../../shared/components/ui/Button';
+import PsgcDropdowns, { type PsgcSelection } from '../../../shared/components/ui/PsgcDropdowns';
+import { uploadFile } from '../../../features/file-upload/api';
+import axiosClient from '../../../shared/api/axiosClient';
 
 function getPasswordStrength(pw: string) {
   if (!pw) return { level: 0, label: '', color: '' };
@@ -16,19 +20,23 @@ function getPasswordStrength(pw: string) {
 export default function Register() {
   const navigate = useNavigate();
   const register = useAuthStore((s) => s.register);
+  const loginWithGoogle = useAuthStore((s) => s.loginWithGoogle);
 
   const [form, setForm] = useState({
     businessName: '',
     role: 'Vendor',
     email: '',
     password: '',
-    address: '',
     permitName: '',
     type: 'Retail',
     category: '',
+    streetAddress: '',
   });
+  const [psgcSelection, setPsgcSelection] = useState<PsgcSelection | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const permitFileRef = useRef<File | null>(null);
 
   const set = (field: string, value: string) => {
     setForm((f) => ({ ...f, [field]: value }));
@@ -59,6 +67,13 @@ export default function Register() {
     setErrors(e);
   };
 
+  const buildFullAddress = () => {
+    const parts = [];
+    if (form.streetAddress.trim()) parts.push(form.streetAddress.trim());
+    if (psgcSelection?.fullAddress) parts.push(psgcSelection.fullAddress);
+    return parts.join(', ');
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
@@ -68,17 +83,65 @@ export default function Register() {
       email: form.email,
       password: form.password,
       businessName: form.businessName,
-      businessAddress: form.address,
+      businessAddress: buildFullAddress(),
       role: form.role,
       ...(form.role === 'Vendor' ? { type: form.type } : { category: form.category }),
+      regionCode: psgcSelection?.regionCode,
+      provinceCode: psgcSelection?.provinceCode,
+      cityCode: psgcSelection?.cityCode,
+      barangayCode: psgcSelection?.barangayCode,
+      streetAddress: form.streetAddress.trim(),
     });
 
     if (result.success) {
-      toast.success('Account created! Please log in.', { duration: 4000 });
-      navigate('/login');
+      // Upload business permit file if one was selected
+      if (permitFileRef.current && result.role) {
+        try {
+          const userId = Number(localStorage.getItem('userId'));
+          const uploaded = await uploadFile(permitFileRef.current, 'BUSINESS_PERMIT');
+          // Update user profile with the permit URL
+          await axiosClient.put(`/api/user/${userId}`, {
+            businessPermit: uploaded.url,
+          });
+        } catch (err) {
+          console.error('Permit upload failed:', err);
+          // Don't block registration — permit can be uploaded later
+        }
+      }
+      toast.success('Account created!', { duration: 4000 });
+      navigate(result.role === 'vendor' ? '/vendor/dashboard' : '/manufacturer/dashboard');
     } else {
       toast.error(result.error || 'Registration failed');
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    setGoogleLoading(true);
+    try {
+      const idToken = credentialResponse.credential;
+      if (!idToken) throw new Error('No credential received from Google');
+
+      const result = await loginWithGoogle(idToken);
+
+      if (result.needsRole) {
+        const payload = JSON.parse(atob(idToken.split('.')[1]));
+        const params = new URLSearchParams({
+          token: idToken,
+          email: payload.email || '',
+          name: payload.name || '',
+        });
+        navigate(`/complete-profile?${params.toString()}`);
+      } else if (result.success) {
+        toast.success('Signed in with Google!');
+        navigate(result.role === 'vendor' ? '/vendor/dashboard' : '/manufacturer/dashboard');
+      } else {
+        toast.error(result.error || 'Google sign-up failed');
+      }
+    } catch {
+      toast.error('Google sign-up failed. Please try again.');
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -207,19 +270,25 @@ export default function Register() {
               )}
             </div>
 
-            <TextArea
-              label="Business Address"
-              placeholder="Enter your business address"
-              value={form.address}
-              onChange={(e) => set('address', e.target.value)}
-              rows={3}
+            {/* PSGC Address Dropdowns */}
+            <PsgcDropdowns onChange={setPsgcSelection} />
+
+            {/* Street / Additional Address Details */}
+            <Input
+              label="Street / Phase / Zone (Optional)"
+              placeholder="e.g. 123 Rizal St., Phase 2, Zone 5"
+              value={form.streetAddress}
+              onChange={(e) => set('streetAddress', e.target.value)}
             />
 
             <FileUpload
               label="Business Permit"
               accept=".pdf,.jpeg,.jpg,.png"
               fileName={form.permitName}
-              onChange={(f) => set('permitName', f.name)}
+              onChange={(f) => {
+                set('permitName', f.name);
+                permitFileRef.current = f;
+              }}
             />
 
             <Button type="submit" fullWidth loading={loading}>
@@ -234,15 +303,24 @@ export default function Register() {
             <div className="flex-1 h-px bg-neutral-100" />
           </div>
 
-          <Button variant="secondary" fullWidth>
-            <svg className="h-4 w-4" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-            </svg>
-            Sign up with Google
-          </Button>
+          {/* Google Sign-Up */}
+          <div className="flex justify-center">
+            {googleLoading ? (
+              <div className="w-full py-3 flex items-center justify-center border border-neutral-200 rounded-xl">
+                <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => toast.error('Google sign-up was cancelled.')}
+                width="340"
+                text="signup_with"
+                shape="rectangular"
+                size="large"
+                locale="en"
+              />
+            )}
+          </div>
 
           <p className="text-sm text-center text-neutral-400 mt-6">
             Already have an account?{' '}

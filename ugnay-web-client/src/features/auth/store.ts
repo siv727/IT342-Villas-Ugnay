@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { loginUser, registerUser, logoutUser, type LoginCredentials, type RegisterData } from '../../features/auth/api';
+import { loginUser, registerUser, googleLogin, logoutUser, type LoginCredentials, type RegisterData } from '../../features/auth/api';
 import type { AxiosError } from 'axios';
 
 interface AuthUser {
@@ -12,6 +12,7 @@ interface AuthState {
   isAuthenticated: boolean;
   login: (credentials: LoginCredentials) => Promise<{ success: boolean; role?: string; error?: string }>;
   register: (data: RegisterData) => Promise<{ success: boolean; role?: string; error?: string }>;
+  loginWithGoogle: (idToken: string, role?: string) => Promise<{ success: boolean; role?: string; needsRole?: boolean; error?: string }>;
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<AuthUser>) => void;
 }
@@ -57,6 +58,32 @@ const useAuthStore = create<AuthState>((set) => ({
       const message = typeof error.response?.data === 'string'
         ? error.response.data
         : 'Registration failed. Please try again.';
+      return { success: false, error: message };
+    }
+  },
+
+  loginWithGoogle: async (idToken: string, role?: string) => {
+    try {
+      const res = await googleLogin(idToken, role);
+
+      if (res.needsRole) {
+        return { success: false, needsRole: true };
+      }
+
+      if (res.userId && res.role) {
+        const userData: AuthUser = { userId: res.userId, role: res.role.toLowerCase() };
+        localStorage.setItem('userId', String(res.userId));
+        localStorage.setItem('userRole', res.role.toLowerCase());
+        set({ user: userData, isAuthenticated: true });
+        return { success: true, role: res.role.toLowerCase() };
+      }
+
+      return { success: false, error: 'Unexpected response from server' };
+    } catch (err) {
+      const error = err as AxiosError<string>;
+      const message = typeof error.response?.data === 'string'
+        ? error.response.data
+        : 'Google sign-in failed. Please try again.';
       return { success: false, error: message };
     }
   },
