@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar } from 'lucide-react';
 import EmptyState from '../../../shared/components/ui/EmptyState';
@@ -7,6 +7,8 @@ import Badge from '../../../shared/components/ui/Badge';
 import Pagination from '../../../shared/components/ui/Pagination';
 import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
 import sampleRequestApi from '../../../features/sample-request/api';
+import useSSE from '../../../shared/hooks/useSSE';
+import toast from 'react-hot-toast';
 
 interface RequestItem {
   id: number;
@@ -25,18 +27,22 @@ export default function MyRequests() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetch = async () => {
-      setLoading(true);
-      try {
-        const res = await sampleRequestApi.getSampleRequests();
-        const body = res?.data;
-        if (body?.success && body.data?.items) setRequests(body.data.items);
-      } catch { /* empty state */ }
-      setLoading(false);
-    };
-    fetch();
+  const fetchRequests = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await sampleRequestApi.getSampleRequests();
+      const body = res?.data;
+      if (body?.success && body.data?.items) setRequests(body.data.items);
+    } catch { /* empty state */ }
+    setLoading(false);
   }, []);
+
+  useEffect(() => { fetchRequests(); }, [fetchRequests]);
+
+  useSSE((event) => {
+    toast(`Request #${event.requestId} → ${event.status}`, { icon: '🔔' });
+    fetchRequests();
+  });
 
   const filtered = useMemo(() => {
     if (statusFilter === 'All') return requests;
