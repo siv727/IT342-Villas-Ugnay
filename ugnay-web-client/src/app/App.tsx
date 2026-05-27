@@ -7,6 +7,8 @@ import AppLayout from '../shared/components/layout/AppLayout';
 /* ---------- Auth ---------- */
 const Login = lazy(() => import('../features/auth/pages/Login'));
 const Register = lazy(() => import('../features/auth/pages/Register'));
+const CompleteGoogleProfile = lazy(() => import('../features/auth/pages/CompleteGoogleProfile'));
+const PaymentResult = lazy(() => import('../features/payment/pages/PaymentResult'));
 
 /* ---------- Vendor ---------- */
 const VendorDashboard = lazy(() => import('../features/dashboard/pages/VendorDashboard'));
@@ -46,6 +48,13 @@ function RequireAuth({ role, children }: { role?: string; children: ReactNode })
   return <>{children}</>;
 }
 
+/* ---------- Smart redirect: if logged in → dashboard, else → login ---------- */
+function SmartRedirect() {
+  const { user } = useAuthStore();
+  if (user) return <Navigate to={`/${user.role}/dashboard`} replace />;
+  return <Navigate to="/login" replace />;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -61,9 +70,14 @@ export default function App() {
       />
       <Suspense fallback={<PageLoader />}>
         <Routes>
+          {/* Root — detects login and redirects */}
+          <Route path="/" element={<SmartRedirect />} />
+
           {/* Public */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/complete-profile" element={<CompleteGoogleProfile />} />
+          <Route path="/payment/result" element={<PaymentResult />} />
 
           {/* Vendor routes */}
           <Route
