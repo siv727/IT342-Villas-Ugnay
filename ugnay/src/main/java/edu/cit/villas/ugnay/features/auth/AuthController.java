@@ -1,5 +1,8 @@
 package edu.cit.villas.ugnay.features.auth;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -7,12 +10,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+
 import edu.cit.villas.ugnay.features.auth.login.LoginRequest;
 import edu.cit.villas.ugnay.features.auth.login.LoginResponse;
 import edu.cit.villas.ugnay.features.auth.register.RegistrationRequest;
-import edu.cit.villas.ugnay.features.auth.RefreshToken;
 import edu.cit.villas.ugnay.shared.entity.User;
-import edu.cit.villas.ugnay.features.auth.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,6 +25,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class AuthController {
 
     private final AuthService authService;
+    private final GoogleOAuthService googleOAuthService;
 
     @Value("${application.security.jwt.expiration}")
     private long accessTokenExpiration;
@@ -29,8 +33,9 @@ public class AuthController {
     @Value("${application.security.jwt.refresh-expiration}")
     private long refreshTokenExpiration;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, GoogleOAuthService googleOAuthService) {
         this.authService = authService;
+        this.googleOAuthService = googleOAuthService;
     }
 
     @PostMapping("/register")
@@ -54,6 +59,51 @@ public class AuthController {
             String role = authService.getUserRole(user);
             setTokenCookies(response, user);
             return ResponseEntity.ok(new LoginResponse(user.getUserId(), role, "Login successful"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<?> googleAuth(@RequestBody Map<String, String> body,
+            HttpServletResponse response) {
+        try {
+            String idToken = body.get("idToken");
+            String role = body.get("role"); // null for returning users
+
+            if (idToken == null || idToken.isBlank()) {
+                return ResponseEntity.badRequest().body("ID token is required");
+            }
+
+            // Verify the Google ID token
+            GoogleIdToken.Payload payload = googleOAuthService.verifyIdToken(idToken);
+            String email = payload.getEmail();
+            String name = (String) payload.get("name");
+            String picture = (String) payload.get("picture");
+
+            // Authenticate or create user
+            User user = authService.authenticateWithGoogle(email, name, picture, role);
+
+            if (user == null) {
+                // New user, needs role selection
+                Map<String, Object> result = new LinkedHashMap<>();
+                result.put("needsRole", true);
+                result.put("email", email);
+                result.put("name", name);
+                result.put("message", "Please select your role to complete registration");
+                return ResponseEntity.ok(result);
+            }
+
+            String userRole = authService.getUserRole(user);
+            setTokenCookies(response, user);
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("userId", user.getUserId());
+            result.put("role", userRole);
+            result.put("message", "Google authentication successful");
+            result.put("needsRole", false);
+            return ResponseEntity.ok(result);
+
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

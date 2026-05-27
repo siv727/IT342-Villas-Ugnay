@@ -2,6 +2,8 @@ package edu.cit.villas.ugnay.features.auth;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -10,8 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import edu.cit.villas.ugnay.features.auth.login.LoginRequest;
 import edu.cit.villas.ugnay.features.auth.register.RegistrationRequest;
+import edu.cit.villas.ugnay.features.email.EmailService;
 import edu.cit.villas.ugnay.shared.entity.Manufacturer;
-import edu.cit.villas.ugnay.features.auth.RefreshToken;
 import edu.cit.villas.ugnay.shared.entity.User;
 import edu.cit.villas.ugnay.shared.entity.Vendor;
 import edu.cit.villas.ugnay.shared.repository.ManufacturerRepository;
@@ -31,6 +33,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
     private final TokenBlacklistService tokenBlacklistService;
+    private final EmailService emailService;
 
     public AuthService(UserRepository userRepository,
                        ManufacturerRepository manufacturerRepository,
@@ -38,7 +41,8 @@ public class AuthService {
                        BCryptPasswordEncoder passwordEncoder,
                        JwtService jwtService,
                        RefreshTokenService refreshTokenService,
-                       TokenBlacklistService tokenBlacklistService) {
+                       TokenBlacklistService tokenBlacklistService,
+                       EmailService emailService) {
         this.userRepository = userRepository;
         this.manufacturerRepository = manufacturerRepository;
         this.vendorRepository = vendorRepository;
@@ -46,6 +50,7 @@ public class AuthService {
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
         this.tokenBlacklistService = tokenBlacklistService;
+        this.emailService = emailService;
     }
 
     public JwtService getJwtService() {
@@ -87,6 +92,14 @@ public class AuthService {
         user.setBusinessAddress(businessAddress);
         user.setBusinessPermit(businessPermit);
         user.setDescription(description);
+        user.setAuthProvider("LOCAL");
+
+        // Persist PSGC codes if provided
+        if (request.getRegionCode() != null) user.setRegionCode(request.getRegionCode());
+        if (request.getProvinceCode() != null) user.setProvinceCode(request.getProvinceCode());
+        if (request.getCityCode() != null) user.setCityCode(request.getCityCode());
+        if (request.getBarangayCode() != null) user.setBarangayCode(request.getBarangayCode());
+        if (request.getStreetAddress() != null) user.setStreetAddress(request.getStreetAddress());
 
         user = userRepository.save(user);
 
@@ -104,6 +117,68 @@ public class AuthService {
             vendor.setType(type);
             vendorRepository.save(vendor);
         }
+
+        // Send welcome email asynchronously
+        emailService.sendWelcomeEmail(email, businessName, role);
+
+        return user;
+    }
+
+    /**
+     * Authenticate or create a user via Google OAuth.
+     * Returns null if the user is new and no role was provided (needs role selection).
+     */
+    @Transactional
+    public User authenticateWithGoogle(String email, String name, String pictureUrl, String role) {
+        Optional<User> existingUser = userRepository.findByEmail(email);
+
+        if (existingUser.isPresent()) {
+            // Returning user — update profile picture if changed
+            User user = existingUser.get();
+            if (pictureUrl != null && !pictureUrl.equals(user.getProfilePicture())) {
+                user.setProfilePicture(pictureUrl);
+                userRepository.save(user);
+            }
+            return user;
+        }
+
+        // New user — need a role to complete registration
+        if (role == null || role.isBlank()) {
+            return null; // Signal that role selection is needed
+        }
+
+        role = role.trim().toUpperCase();
+        if (!"MANUFACTURER".equals(role) && !"VENDOR".equals(role)) {
+            throw new IllegalArgumentException("Role must be either 'MANUFACTURER' or 'VENDOR'.");
+        }
+
+        // Create new user with Google auth
+        User user = new User();
+        user.setEmail(email);
+        user.setBusinessName(name != null ? name : email.split("@")[0]);
+        user.setBusinessAddress(""); // Will be set during profile completion
+        user.setAuthProvider("GOOGLE");
+        user.setProfilePicture(pictureUrl);
+        // Google users don't have a local password — generate a random one
+        user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+
+        user = userRepository.save(user);
+
+        // Create role-specific profile
+        if ("MANUFACTURER".equals(role)) {
+            Manufacturer manufacturer = new Manufacturer();
+            manufacturer.setUser(user);
+            manufacturer.setCategory("General");
+            manufacturerRepository.save(manufacturer);
+        } else {
+            Vendor vendor = new Vendor();
+            vendor.setUser(user);
+            vendor.setType("RETAIL");
+            vendorRepository.save(vendor);
+        }
+
+        // Send welcome email
+        emailService.sendWelcomeEmail(email, user.getBusinessName(), role);
 
         return user;
     }
