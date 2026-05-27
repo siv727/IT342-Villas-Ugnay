@@ -1,6 +1,7 @@
 package edu.cit.villas.ugnay.features.samplerequest;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -28,4 +29,6 @@ public interface SampleRequestRepository extends JpaRepository<SampleRequest, Lo
     long countByManufacturerAndRequestStatus(Manufacturer manufacturer, RequestStatus status);
 
     long countByVendorAndRequestStatus(Vendor vendor, RequestStatus status);
+
+    Optional<SampleRequest> findByPaymentSessionId(String paymentSessionId);
 }

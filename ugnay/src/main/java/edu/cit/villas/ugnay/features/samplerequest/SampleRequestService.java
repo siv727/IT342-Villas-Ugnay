@@ -1,9 +1,12 @@
 package edu.cit.villas.ugnay.features.samplerequest;
 
-import edu.cit.villas.ugnay.features.email.MockEmailService;
+import edu.cit.villas.ugnay.features.email.EmailService;
+import edu.cit.villas.ugnay.features.sse.SseService;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,14 +25,17 @@ public class SampleRequestService {
 
     private final SampleRequestRepository sampleRequestRepository;
     private final ProductRepository productRepository;
-    private final MockEmailService mockEmailService;
+    private final EmailService emailService;
+    private final SseService sseService;
 
     public SampleRequestService(SampleRequestRepository sampleRequestRepository,
                                  ProductRepository productRepository,
-                                 MockEmailService mockEmailService) {
+                                 EmailService emailService,
+                                 SseService sseService) {
         this.sampleRequestRepository = sampleRequestRepository;
         this.productRepository = productRepository;
-        this.mockEmailService = mockEmailService;
+        this.emailService = emailService;
+        this.sseService = sseService;
     }
 
     @Transactional
@@ -53,12 +59,13 @@ public class SampleRequestService {
 
         SampleRequest saved = sampleRequestRepository.save(request);
 
-        mockEmailService.sendStatusUpdateEmail(
+        emailService.sendStatusUpdateEmail(
                 manufacturer.getUser().getEmail(),
                 saved.getRequestId(),
                 "PENDING — New request from " + vendor.getUser().getBusinessName()
         );
 
+        emitRequestUpdate(saved, "CREATED");
         return saved;
     }
 
@@ -93,9 +100,10 @@ public class SampleRequestService {
         request.setDeliveryFee(deliveryFee);
         SampleRequest saved = sampleRequestRepository.save(request);
 
-        mockEmailService.sendStatusUpdateEmail(
+        emailService.sendStatusUpdateEmail(
                 request.getVendor().getUser().getEmail(), requestId, "APPROVED");
 
+        emitRequestUpdate(saved, "APPROVED");
         return saved;
     }
 
@@ -109,9 +117,10 @@ public class SampleRequestService {
         request.setRejectionReason(reason);
         SampleRequest saved = sampleRequestRepository.save(request);
 
-        mockEmailService.sendStatusUpdateEmail(
+        emailService.sendStatusUpdateEmail(
                 request.getVendor().getUser().getEmail(), requestId, "REJECTED");
 
+        emitRequestUpdate(saved, "REJECTED");
         return saved;
     }
 
@@ -129,7 +138,9 @@ public class SampleRequestService {
         }
 
         request.setRequestStatus(RequestStatus.CANCELLED);
-        return sampleRequestRepository.save(request);
+        SampleRequest saved = sampleRequestRepository.save(request);
+        emitRequestUpdate(saved, "CANCELLED");
+        return saved;
     }
 
     @Transactional
@@ -165,9 +176,10 @@ public class SampleRequestService {
         request.setRequestStatus(newStatus);
         SampleRequest saved = sampleRequestRepository.save(request);
 
-        mockEmailService.sendStatusUpdateEmail(
+        emailService.sendStatusUpdateEmail(
                 request.getVendor().getUser().getEmail(), requestId, newStatus.name());
 
+        emitRequestUpdate(saved, newStatus.name());
         return saved;
     }
 
@@ -181,7 +193,52 @@ public class SampleRequestService {
 
         request.setRequestStatus(RequestStatus.PAID);
         request.setPaymentId(paymentId);
-        return sampleRequestRepository.save(request);
+        SampleRequest saved = sampleRequestRepository.save(request);
+        emitRequestUpdate(saved, "PAID");
+        return saved;
+    }
+
+    @Transactional
+    public SampleRequest completeRequest(Long requestId, Vendor vendor) {
+        SampleRequest request = getRequestById(requestId);
+
+        if (!request.getVendor().getVendorId().equals(vendor.getVendorId())) {
+            throw new IllegalArgumentException("Only the requesting vendor can complete this request");
+        }
+
+        if (request.getRequestStatus() != RequestStatus.DELIVERED) {
+            throw new IllegalArgumentException("Can only complete DELIVERED requests");
+        }
+
+        request.setRequestStatus(RequestStatus.COMPLETED);
+
+        // Deduct stock for each item in the request
+        for (SampleRequestItem item : request.getItems()) {
+            Product product = item.getProduct();
+            int newStock = Math.max(0, product.getStock() - item.getQuantity());
+            product.setStock(newStock);
+            productRepository.save(product);
+        }
+
+        SampleRequest saved = sampleRequestRepository.save(request);
+
+        // Notify manufacturer
+        emailService.sendStatusUpdateEmail(
+                request.getManufacturer().getUser().getEmail(), requestId, "COMPLETED");
+
+        emitRequestUpdate(saved, "COMPLETED");
+        return saved;
+    }
+
+    @Transactional
+    public SampleRequest updateDeliveryProofUrl(Long requestId, Manufacturer manufacturer, String proofUrl) {
+        SampleRequest request = getRequestById(requestId);
+        validateManufacturerOwnership(request, manufacturer);
+
+        request.setDeliveryProofUrl(proofUrl);
+        SampleRequest saved = sampleRequestRepository.save(request);
+        emitRequestUpdate(saved, "DELIVERY_PROOF_UPLOADED");
+        return saved;
     }
 
     private void validateManufacturerOwnership(SampleRequest request, Manufacturer manufacturer) {
@@ -199,4 +256,29 @@ public class SampleRequestService {
 
     // Record for conveying item input from controller
     public record SampleRequestItemInput(Long productId, Integer quantity) {}
+
+    /**
+     * Push real-time SSE event to both vendor and manufacturer for this request.
+     */
+    private void emitRequestUpdate(SampleRequest request, String action) {
+        try {
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("requestId", request.getRequestId());
+            payload.put("status", request.getRequestStatus().name());
+            payload.put("action", action);
+            payload.put("timestamp", java.time.Instant.now().toString());
+
+            Long vendorUserId = request.getVendor().getUser().getUserId();
+            Long manufacturerUserId = request.getManufacturer().getUser().getUserId();
+
+            sseService.sendToUsers(
+                    List.of(vendorUserId, manufacturerUserId),
+                    "request-update",
+                    payload
+            );
+        } catch (Exception e) {
+            // SSE is best-effort — don't break the transaction if it fails
+            System.err.println("SSE emit failed: " + e.getMessage());
+        }
+    }
 }

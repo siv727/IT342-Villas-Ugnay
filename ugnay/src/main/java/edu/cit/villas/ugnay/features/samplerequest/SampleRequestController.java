@@ -219,12 +219,54 @@ public class SampleRequestController {
         }
     }
 
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<ApiResponse<Object>> completeRequest(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id) {
+        try {
+            Vendor vendor = vendorRepository.findByUser(user)
+                    .orElseThrow(() -> new IllegalArgumentException("Vendor profile not found"));
+
+            SampleRequest request = sampleRequestService.completeRequest(id, vendor);
+
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("id", request.getRequestId());
+            data.put("status", request.getRequestStatus().name());
+            return ResponseEntity.ok(ApiResponse.success(data));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("BUSINESS-001", e.getMessage(), null));
+        }
+    }
+
+    @PutMapping("/{id}/delivery-proof")
+    public ResponseEntity<ApiResponse<Object>> updateDeliveryProof(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+        try {
+            Manufacturer manufacturer = manufacturerRepository.findByUser(user)
+                    .orElseThrow(() -> new IllegalArgumentException("Manufacturer profile not found"));
+
+            String proofUrl = (String) body.get("deliveryProofUrl");
+            SampleRequest request = sampleRequestService.updateDeliveryProofUrl(id, manufacturer, proofUrl);
+
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("id", request.getRequestId());
+            data.put("deliveryProofUrl", request.getDeliveryProofUrl());
+            return ResponseEntity.ok(ApiResponse.success(data));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("BUSINESS-001", e.getMessage(), null));
+        }
+    }
+
     // --- Mapping helpers ---
 
     private Map<String, Object> toListMap(SampleRequest r) {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("id", r.getRequestId());
         map.put("vendorId", r.getVendor() != null ? r.getVendor().getVendorId() : null);
+        map.put("vendorName", r.getVendor() != null && r.getVendor().getUser() != null ? r.getVendor().getUser().getBusinessName() : null);
+        map.put("vendorEmail", r.getVendor() != null && r.getVendor().getUser() != null ? r.getVendor().getUser().getEmail() : null);
         map.put("manufacturerId", r.getManufacturer() != null ? r.getManufacturer().getManufacturerId() : null);
         map.put("items", r.getItems().stream().map(this::toItemMap).toList());
         map.put("status", r.getRequestStatus().name());
@@ -238,12 +280,15 @@ public class SampleRequestController {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("id", r.getRequestId());
         map.put("vendorId", r.getVendor() != null ? r.getVendor().getVendorId() : null);
+        map.put("vendorName", r.getVendor() != null && r.getVendor().getUser() != null ? r.getVendor().getUser().getBusinessName() : null);
+        map.put("vendorEmail", r.getVendor() != null && r.getVendor().getUser() != null ? r.getVendor().getUser().getEmail() : null);
         map.put("manufacturerId", r.getManufacturer() != null ? r.getManufacturer().getManufacturerId() : null);
         map.put("items", r.getItems().stream().map(this::toItemMap).toList());
         map.put("status", r.getRequestStatus().name());
         map.put("deliveryFee", r.getDeliveryFee());
         map.put("paymentId", r.getPaymentId());
         map.put("trackingNumber", r.getTrackingNumber());
+        map.put("deliveryProofUrl", r.getDeliveryProofUrl());
         map.put("createdAt", r.getCreatedAt() != null ? r.getCreatedAt().toString() : null);
         map.put("updatedAt", r.getUpdatedAt() != null ? r.getUpdatedAt().toString() : null);
         return map;

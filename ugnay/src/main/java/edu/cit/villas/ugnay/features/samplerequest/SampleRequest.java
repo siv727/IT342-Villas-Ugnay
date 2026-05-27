@@ -63,6 +63,12 @@ public class SampleRequest {
     @Column(name = "payment_id", length = 255)
     private String paymentId;
 
+    @Column(name = "payment_session_id", length = 255)
+    private String paymentSessionId;
+
+    @Column(name = "delivery_proof_url", length = 500)
+    private String deliveryProofUrl;
+
     @OneToMany(mappedBy = "sampleRequest", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<SampleRequestItem> items = new ArrayList<>();
 
