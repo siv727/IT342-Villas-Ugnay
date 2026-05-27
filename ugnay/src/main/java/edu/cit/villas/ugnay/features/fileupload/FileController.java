@@ -15,21 +15,19 @@ import org.springframework.web.multipart.MultipartFile;
 
 import edu.cit.villas.ugnay.shared.dto.ApiResponse;
 import edu.cit.villas.ugnay.shared.entity.User;
-import edu.cit.villas.ugnay.features.fileupload.MockFileStorageService;
 
 /**
- * File Upload Controller — mock Cloudinary / Supabase Storage integration.
+ * File Upload Controller — Supabase Storage integration.
  * Matches frontend fileApi.ts endpoints.
- * Replace MockFileStorageService calls with real storage when keys are available.
  */
 @RestController
 @RequestMapping("/api/files")
 public class FileController {
 
-    private final MockFileStorageService mockFileStorageService;
+    private final SupabaseStorageService storageService;
 
-    public FileController(MockFileStorageService mockFileStorageService) {
-        this.mockFileStorageService = mockFileStorageService;
+    public FileController(SupabaseStorageService storageService) {
+        this.storageService = storageService;
     }
 
     @PostMapping("/upload")
@@ -38,8 +36,7 @@ public class FileController {
             @RequestParam("file") MultipartFile file,
             @RequestParam("context") String context) {
         try {
-            String originalFilename = file.getOriginalFilename();
-            Map<String, Object> fileData = mockFileStorageService.uploadFile(originalFilename, context);
+            Map<String, Object> fileData = storageService.uploadFile(file, context);
 
             Map<String, Object> data = new LinkedHashMap<>();
             data.put("file", fileData);
@@ -54,7 +51,7 @@ public class FileController {
             @AuthenticationPrincipal User user,
             @PathVariable String id) {
         try {
-            Map<String, Object> fileData = mockFileStorageService.getFile(id);
+            Map<String, Object> fileData = storageService.getFile(id);
             return ResponseEntity.ok(ApiResponse.success(fileData));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error("SYSTEM-001", e.getMessage(), null));
