@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type ChangeEvent } from 'react';
+import { useState, useEffect, useRef, useCallback, type ChangeEvent } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronRight, Package, CreditCard, User, CheckCircle, XCircle, Truck, Upload, Image } from 'lucide-react';
 import Badge from '../../../shared/components/ui/Badge';
@@ -13,6 +13,7 @@ import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
 import toast from 'react-hot-toast';
 import sampleRequestApi from '../../../features/sample-request/api';
 import fileApi from '../../../features/file-upload/api';
+import useSSE from '../../../shared/hooks/useSSE';
 
 const TIMELINE_STEPS = ['Pending', 'Approved', 'Paid', 'Shipped', 'Delivered', 'Completed'];
 
@@ -37,6 +38,9 @@ interface RequestDetail {
   paymentId?: string;
   trackingNumber?: string;
   vendorId?: number;
+  vendorName?: string;
+  vendorEmail?: string;
+  deliveryProofUrl?: string;
   items?: { productId: number; productName: string; quantity: number }[];
 }
 
@@ -54,21 +58,30 @@ export default function ManufacturerRequestDetail() {
   const [proofUrl, setProofUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
-    const fetch = async () => {
-      if (!id) return;
-      setLoading(true);
-      try {
-        const res = await sampleRequestApi.getSampleRequest(id);
-        const body = res?.data;
-        setRequest(body?.success ? body.data : body);
-      } catch {
-        setRequest(null);
-      }
-      setLoading(false);
-    };
-    fetch();
+  const fetchRequest = useCallback(async () => {
+    if (!id) return;
+    setLoading(true);
+    try {
+      const res = await sampleRequestApi.getSampleRequest(id);
+      const body = res?.data;
+      const data = body?.success ? body.data : body;
+      setRequest(data);
+      if (data?.deliveryProofUrl) setProofUrl(data.deliveryProofUrl);
+    } catch {
+      setRequest(null);
+    }
+    setLoading(false);
   }, [id]);
+
+  useEffect(() => { fetchRequest(); }, [fetchRequest]);
+
+  // Real-time updates via SSE
+  useSSE((event) => {
+    if (String(event.requestId) === id) {
+      toast(`Status updated to ${event.status}`, { icon: '🔔' });
+      fetchRequest();
+    }
+  });
 
   if (loading) return <LoadingSpinner label="Loading request…" />;
   if (!request) return <EmptyState title="Request not found" />;
@@ -117,9 +130,17 @@ export default function ManufacturerRequestDetail() {
   const handleUploadProof = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const result = await fileApi.uploadFile(file, 'DELIVERY_PROOF');
-    setProofUrl(result.url);
-    toast.success(`Delivery proof "${result.fileName}" uploaded`);
+    try {
+      const result = await fileApi.uploadFile(file, 'DELIVERY_PROOF');
+      setProofUrl(result.url);
+      // Persist the proof URL to the database
+      if (request) {
+        await sampleRequestApi.updateDeliveryProof(request.id, result.url);
+      }
+      toast.success(`Delivery proof "${result.fileName}" uploaded`);
+    } catch {
+      toast.error('Failed to upload delivery proof');
+    }
   };
 
   const handleMarkDelivered = async () => {
@@ -182,7 +203,8 @@ export default function ManufacturerRequestDetail() {
         <Card>
           <div className="flex items-center gap-2 mb-4"><User className="h-5 w-5 text-accent" /><h3 className="font-semibold text-neutral-900">Vendor</h3></div>
           <dl className="space-y-3 text-sm">
-            <div className="flex justify-between"><dt className="text-neutral-400">Vendor ID</dt><dd className="font-medium">#{request.vendorId}</dd></div>
+            <div className="flex justify-between"><dt className="text-neutral-400">Business Name</dt><dd className="font-medium">{request.vendorName || 'N/A'}</dd></div>
+            <div className="flex justify-between"><dt className="text-neutral-400">Email</dt><dd className="font-medium text-xs">{request.vendorEmail || 'N/A'}</dd></div>
           </dl>
         </Card>
 
@@ -207,7 +229,10 @@ export default function ManufacturerRequestDetail() {
           {proofUrl && (
             <div className="mt-4 border-t border-neutral-200 pt-4">
               <p className="text-xs font-medium text-neutral-500 mb-2 flex items-center gap-1"><Image className="h-3.5 w-3.5" /> Delivery Proof</p>
-              <img src={proofUrl} alt="Delivery proof" className="w-full h-36 object-cover rounded-lg border border-neutral-200" />
+              <a href={proofUrl} target="_blank" rel="noopener noreferrer" className="block cursor-pointer hover:opacity-80 transition-opacity">
+                <img src={proofUrl} alt="Delivery proof" className="w-full h-36 object-cover rounded-lg border border-neutral-200" />
+                <p className="text-xs text-primary mt-1 text-center">Click to view full image</p>
+              </a>
             </div>
           )}
         </Card>

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronRight, Package, CreditCard, Truck, XCircle, Loader2, CheckCircle } from 'lucide-react';
+import { ChevronRight, Package, CreditCard, Truck, XCircle, Loader2, CheckCircle, Image } from 'lucide-react';
 import EmptyState from '../../../shared/components/ui/EmptyState';
 import Card from '../../../shared/components/ui/Card';
 import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
@@ -11,6 +11,7 @@ import { ConfirmModal } from '../../../shared/components/ui/Modal';
 import sampleRequestApi from '../../../features/sample-request/api';
 import paymentApi from '../../../features/payment/api';
 import toast from 'react-hot-toast';
+import useSSE from '../../../shared/hooks/useSSE';
 
 const TIMELINE_STEPS = ['Pending', 'Approved', 'Paid', 'Shipped', 'Delivered', 'Completed'];
 
@@ -34,6 +35,7 @@ interface RequestDetail {
   deliveryFee?: number;
   paymentId?: string;
   trackingNumber?: string;
+  deliveryProofUrl?: string;
   items?: { productId: number; productName: string; quantity: number }[];
 }
 
@@ -42,25 +44,35 @@ export default function RequestDetail() {
   const [request, setRequest] = useState<RequestDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [completeOpen, setCompleteOpen] = useState(false);
   const [paying, setPaying] = useState(false);
   const [paySuccess, setPaySuccess] = useState(false);
 
-  useEffect(() => {
-    const fetch = async () => {
-      if (!id) return;
-      setLoading(true);
-      try {
-        const res = await sampleRequestApi.getSampleRequest(id);
-        const body = res?.data;
-        setRequest(body?.success ? body.data : body);
-      } catch {
-        setRequest(null);
-      }
-      setLoading(false);
-    };
-    fetch();
-    setPaySuccess(false);
+  const fetchRequest = useCallback(async () => {
+    if (!id) return;
+    setLoading(true);
+    try {
+      const res = await sampleRequestApi.getSampleRequest(id);
+      const body = res?.data;
+      setRequest(body?.success ? body.data : body);
+    } catch {
+      setRequest(null);
+    }
+    setLoading(false);
   }, [id]);
+
+  useEffect(() => {
+    fetchRequest();
+    setPaySuccess(false);
+  }, [fetchRequest]);
+
+  // Real-time updates via SSE
+  useSSE((event) => {
+    if (String(event.requestId) === id) {
+      toast(`Status updated to ${event.status}`, { icon: '🔔' });
+      fetchRequest();
+    }
+  });
 
   if (loading) return <LoadingSpinner label="Loading request…" />;
   if (!request) return <EmptyState title="Request not found" />;
@@ -69,6 +81,7 @@ export default function RequestDetail() {
   const isCancelled = request.status === 'CANCELLED' || request.status === 'Cancelled';
   const canCancel = request.status === 'PENDING' || request.status === 'Pending';
   const canPay = request.status === 'APPROVED' || request.status === 'Approved';
+  const canComplete = request.status === 'DELIVERED' || request.status === 'Delivered';
   const currentStep = resolveStep(request.status);
 
   const handleCancel = async () => {
@@ -89,16 +102,30 @@ export default function RequestDetail() {
         sampleRequestId: request.id,
         paymentMethod: 'GCASH',
       });
-      await new Promise((resolve) => setTimeout(resolve, 2500));
-      await paymentApi.confirmPayment(intent.paymentId);
-      setRequest({ ...request, status: 'PAID' });
-      setPaySuccess(true);
-      toast.success('Payment successful! Status updated to PAID.');
+      // Redirect to PayMongo's hosted checkout page
+      // After payment, PayMongo redirects back to our success URL
+      // which triggers the confirm flow automatically
+      if (intent.checkoutUrl) {
+        window.location.href = intent.checkoutUrl;
+      } else {
+        toast.error('Failed to get checkout URL');
+        setPaying(false);
+      }
     } catch {
       toast.error('Payment failed. Please try again.');
-    } finally {
       setPaying(false);
     }
+  };
+
+  const handleComplete = async () => {
+    try {
+      await sampleRequestApi.completeSampleRequest(request.id);
+      setRequest({ ...request, status: 'COMPLETED' });
+      toast.success('Request marked as completed!');
+    } catch {
+      toast.error('Failed to complete request');
+    }
+    setCompleteOpen(false);
   };
 
   return (
@@ -183,6 +210,15 @@ export default function RequestDetail() {
             <dl className="space-y-3 text-sm">
               <div className="flex justify-between"><dt className="text-neutral-400">Tracking #</dt><dd className="font-mono text-xs font-medium">{request.trackingNumber}</dd></div>
             </dl>
+            {request.deliveryProofUrl && (
+              <div className="mt-4 border-t border-neutral-200 pt-4">
+                <p className="text-xs font-medium text-neutral-500 mb-2 flex items-center gap-1"><Image className="h-3.5 w-3.5" /> Delivery Proof</p>
+                <a href={request.deliveryProofUrl} target="_blank" rel="noopener noreferrer" className="block cursor-pointer hover:opacity-80 transition-opacity">
+                  <img src={request.deliveryProofUrl} alt="Delivery proof" className="w-full h-36 object-cover rounded-lg border border-neutral-200" />
+                  <p className="text-xs text-primary mt-1 text-center">Click to view full image</p>
+                </a>
+              </div>
+            )}
           </Card>
         )}
       </div>
@@ -223,6 +259,11 @@ export default function RequestDetail() {
             <XCircle className="h-4 w-4" /> Cancel Request
           </Button>
         )}
+        {canComplete && (
+          <Button variant="accent" onClick={() => setCompleteOpen(true)}>
+            <CheckCircle className="h-4 w-4" /> Complete Order
+          </Button>
+        )}
       </div>
 
       <ConfirmModal
@@ -233,6 +274,16 @@ export default function RequestDetail() {
         description="Are you sure you want to cancel this sample request? This cannot be undone."
         confirmLabel="Cancel Request"
         variant="danger"
+      />
+
+      <ConfirmModal
+        open={completeOpen}
+        onClose={() => setCompleteOpen(false)}
+        onConfirm={handleComplete}
+        title="Complete Order?"
+        description="Confirm that you have received the sample and want to mark this order as completed."
+        confirmLabel="Complete Order"
+        variant="accent"
       />
     </div>
   );
