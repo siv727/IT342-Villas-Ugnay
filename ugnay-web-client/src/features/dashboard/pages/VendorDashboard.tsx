@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Bookmark, CreditCard, CheckCircle } from 'lucide-react';
 import useAuthStore from '../../../features/auth/store';
@@ -9,6 +9,8 @@ import Button from '../../../shared/components/ui/Button';
 import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
 import sampleRequestApi from '../../../features/sample-request/api';
 import connectionApi from '../../../features/connection/api';
+import useSSE from '../../../shared/hooks/useSSE';
+import toast from 'react-hot-toast';
 
 interface RequestItem {
   id: number;
@@ -23,24 +25,29 @@ export default function VendorDashboard() {
   const [savedCount, setSavedCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const res = await sampleRequestApi.getSampleRequests();
-        const body = res?.data;
-        if (body?.success && body.data?.items) setRequests(body.data.items);
-      } catch { /* empty state */ }
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await sampleRequestApi.getSampleRequests();
+      const body = res?.data;
+      if (body?.success && body.data?.items) setRequests(body.data.items);
+    } catch { /* empty state */ }
 
-      try {
-        const res = await connectionApi.getConnections();
-        const body = res?.data;
-        if (body?.success && body.data?.items) setSavedCount(body.data.items.length);
-      } catch { /* empty state */ }
-      setLoading(false);
-    };
-    fetchData();
+    try {
+      const res = await connectionApi.getConnections();
+      const body = res?.data;
+      if (body?.success && body.data?.items) setSavedCount(body.data.items.length);
+    } catch { /* empty state */ }
+    setLoading(false);
   }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Real-time updates via SSE
+  useSSE((event) => {
+    toast(`Request #${event.requestId} → ${event.status}`, { icon: '🔔' });
+    fetchData();
+  });
 
   if (loading) return <LoadingSpinner label="Loading dashboard…" />;
 

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, ClipboardList, Truck, DollarSign, ArrowRight } from 'lucide-react';
+import { Package, ClipboardList, Truck, Banknote, ArrowRight } from 'lucide-react';
 import useAuthStore from '../../../features/auth/store';
 import { StatCard } from '../../../shared/components/ui/Card';
 import Card from '../../../shared/components/ui/Card';
@@ -9,6 +9,8 @@ import Button from '../../../shared/components/ui/Button';
 import LoadingSpinner from '../../../shared/components/ui/LoadingSpinner';
 import sampleRequestApi from '../../../features/sample-request/api';
 import productApi from '../../../features/product/api';
+import useSSE from '../../../shared/hooks/useSSE';
+import toast from 'react-hot-toast';
 
 interface RequestItem {
   id: number;
@@ -24,23 +26,28 @@ export default function ManufacturerDashboard() {
   const [activeProducts, setActiveProducts] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const res = await sampleRequestApi.getSampleRequests();
-        const body = res?.data;
-        if (body?.success && body.data?.items) setRequests(body.data.items);
-      } catch { /* empty state */ }
-      try {
-        const res = await productApi.getMyProducts();
-        const body = res?.data;
-        if (body?.success && body.data?.items) setActiveProducts(body.data.items.length);
-      } catch { /* ignore */ }
-      setLoading(false);
-    };
-    fetchData();
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await sampleRequestApi.getSampleRequests();
+      const body = res?.data;
+      if (body?.success && body.data?.items) setRequests(body.data.items);
+    } catch { /* empty state */ }
+    try {
+      const res = await productApi.getMyProducts();
+      const body = res?.data;
+      if (body?.success && body.data?.items) setActiveProducts(body.data.items.length);
+    } catch { /* ignore */ }
+    setLoading(false);
   }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Real-time updates via SSE
+  useSSE((event) => {
+    toast(`Request #${event.requestId} → ${event.status}`, { icon: '🔔' });
+    fetchData();
+  });
 
   if (loading) return <LoadingSpinner label="Loading dashboard…" />;
 
@@ -66,7 +73,7 @@ export default function ManufacturerDashboard() {
         <StatCard icon={Package} label="Active Products" value={activeProducts} />
         <StatCard icon={ClipboardList} label="Pending Requests" value={pendingRequests} />
         <StatCard icon={Truck} label="Active Shipments" value={activeShipments} />
-        <StatCard icon={DollarSign} label="Revenue" value={`₱${totalRevenue.toLocaleString()}`} />
+        <StatCard icon={Banknote} label="Revenue" value={`₱${totalRevenue.toLocaleString()}`} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
