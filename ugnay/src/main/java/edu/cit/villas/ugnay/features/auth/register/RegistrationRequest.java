@@ -19,4 +19,13 @@ public class RegistrationRequest {
 
     // For Vendor: "RETAIL" or "FOOD"
     private String type;
+
+    // PSGC location codes (optional)
+    private String regionCode;
+    private String provinceCode;
+    private String cityCode;
+    private String barangayCode;
+
+    // Street, Phase, Zone, etc.
+    private String streetAddress;
 }

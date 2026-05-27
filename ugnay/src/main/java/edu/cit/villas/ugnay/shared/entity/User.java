@@ -49,8 +49,29 @@ public class User implements UserDetails {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false, length = 255)
+    @Column(length = 255)
     private String password;
+
+    @Column(name = "auth_provider", length = 20, columnDefinition = "VARCHAR(20) DEFAULT 'LOCAL'")
+    private String authProvider = "LOCAL";
+
+    @Column(name = "profile_picture", columnDefinition = "TEXT")
+    private String profilePicture;
+
+    @Column(name = "region_code", length = 20)
+    private String regionCode;
+
+    @Column(name = "province_code", length = 20)
+    private String provinceCode;
+
+    @Column(name = "city_code", length = 20)
+    private String cityCode;
+
+    @Column(name = "barangay_code", length = 20)
+    private String barangayCode;
+
+    @Column(name = "street_address", length = 500)
+    private String streetAddress;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
